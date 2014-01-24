@@ -1,6 +1,14 @@
 Spree::Core::Engine.routes.draw do
 
-	get  "products/import" => "products#import", as: :import_product    
-	post "load_data" => "products#load_data", as: :load_data_product
+  namespace :admin do 
+
+    resources :products do
+      collection do
+	get :import
+	post :load_data
+      end		
+    end
+
+  end
 
 end
