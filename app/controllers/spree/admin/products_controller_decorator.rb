@@ -1,6 +1,6 @@
 module Spree
 
-  ProductController.class_eval do
+  ProductsController.class_eval do
 
     def import
     end
