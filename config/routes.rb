@@ -1,3 +1,6 @@
 Spree::Core::Engine.routes.draw do
-  # Add your extension routes here
+
+	get  "products/import" => "products#import"
+	post "load_data"       => "products#load_data" 
+
 end
