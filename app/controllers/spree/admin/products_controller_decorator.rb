@@ -7,7 +7,7 @@ module Spree
 
     def load_data
       success, message = SpreeProductsImporter::Handler.import(params[:file])
-      redirect_to import_product_path, success ? {notice: message} : {notice: message}
+      redirect_to import_admin_products_path, success ? {notice: message} : {notice: message}
     end
 
   end
