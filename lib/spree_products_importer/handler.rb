@@ -1,6 +1,5 @@
 #encoding: utf-8
 require 'roo'
-require 'rest-client'
 
 module SpreeProductsImporter
 
@@ -31,17 +30,9 @@ module SpreeProductsImporter
       end
 
       # Creates each product with Spree API
-      products_list.each do |product|
-        begin
-          # Create a Product
-          raise
-          response = RestClient.post "#{@@api_url_base}/products?token=#{@@api_token}", {product: product}.to_json, {content_type: :json, accept: :json}
-          # TODO: Add properties to recently created product
-
-        rescue RestClient::BadRequest => e
-          api_error = e
-          success   = false
-        end
+      products_list.each do |product|        
+        # response = RestClient.post "#{@@api_url_base}/products?token=#{@@api_token}", {product: product}.to_json, {content_type: :json, accept: :json}  
+        # TODO: Add properties to recently created product
       end
 
       return success ? "Products created successfully" : "API error #{e}"
