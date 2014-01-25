@@ -1,13 +1,17 @@
 module Spree
+  
+  module Admin
 
-  ProductsController.class_eval do
+    ProductsController.class_eval do
 
-    def import
-    end
+      def import
+      end
 
-    def load_data
-      success, message = SpreeProductsImporter::Handler.import(params[:file])
-      redirect_to import_admin_products_path, success ? {notice: message} : {notice: message}
+      def import_spreadsheet
+        success, message = SpreeProductsImporter::Handler.get_file_data(params[:file])
+        redirect_to import_admin_products_path, notice: message
+      end
+
     end
 
   end

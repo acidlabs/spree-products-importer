@@ -6,8 +6,8 @@ module SpreeProductsImporter
 
   class Handler
 
-    @@api_url_base = "http://localhost:3000"
-    @@api_token    = "token"
+    @@api_url_base = "http://localhost:3000/api"
+    @@api_token    = "26bc0e875720cfcae1aefb51b9f20a3ba96d86f8d307d96f"
 
     # Receives a file and the get data from each file row
     def self.get_file_data(file)
@@ -26,7 +26,7 @@ module SpreeProductsImporter
         if is_valid
           products_list << data
         else
-          return "An error found at line #{i}: #{attr} is required"
+          return data
         end
       end
 
@@ -34,6 +34,7 @@ module SpreeProductsImporter
       products_list.each do |product|
         begin
           # Create a Product
+          raise
           response = RestClient.post "#{@@api_url_base}/products?token=#{@@api_token}", {product: product}.to_json, {content_type: :json, accept: :json}
           # TODO: Add properties to recently created product
 
@@ -57,16 +58,16 @@ module SpreeProductsImporter
     end
 
     # Validate each file row according to required attributes
-    def validate_product_data data
+    def self.validate_product_data data
       required_attributes = ["sku", "name", "price"]
       validated_data = {}
 
       required_attributes.each do |attr|
-        if row[attr].blank?
+        if data[attr].blank?
           return [false, "An error found at line #{i}: #{attr} is required"]
         else
           # Add key => value to normalized and validated hash
-          validated_data = validated_data.merge(attr.to_sym => row[attr])
+          validated_data = validated_data.merge(attr.to_sym => data[attr])
         end
       end
 
