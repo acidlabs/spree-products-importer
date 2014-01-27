@@ -1,12 +1,10 @@
 #encoding: utf-8
 require 'roo'
+require 'httparty'
 
 module SpreeProductsImporter
 
   class Handler
-
-    @@api_url_base = "http://localhost:3000/api"
-    @@api_token    = "26bc0e875720cfcae1aefb51b9f20a3ba96d86f8d307d96f"
 
     # Receives a file and the get data from each file row
     def self.get_file_data(file)
@@ -30,9 +28,11 @@ module SpreeProductsImporter
       end
 
       # Creates each product with Spree API
-      products_list.each do |product|        
-        # response = RestClient.post "#{@@api_url_base}/products?token=#{@@api_token}", {product: product}.to_json, {content_type: :json, accept: :json}  
-        # TODO: Add properties to recently created product
+      products_list.each do |product_data|
+        # Create product
+        product = Spree::Product.create product_data[:product]
+        # Set product properties
+        set_product_properties product, product_data[:properties]
       end
 
       return success ? "Products created successfully" : "API error #{e}"
@@ -51,19 +51,32 @@ module SpreeProductsImporter
     # Validate each file row according to required attributes
     def self.validate_product_data data
       required_attributes = ["sku", "name", "price"]
-      validated_data = {}
+      validated_data = {product: {}, properties: {}}
 
       required_attributes.each do |attr|
         if data[attr].blank?
           return [false, "An error found at line #{i}: #{attr} is required"]
         else
           # Add key => value to normalized and validated hash
-          validated_data = validated_data.merge(attr.to_sym => data[attr])
+          validated_data[:product] = validated_data[:product].merge(attr.to_sym => data[attr])
+
+          # Remove validate element
+          data.delete(attr)
         end
       end
 
-      #[true, validated_data]
-      [true, validated_data.merge(:shipping_category_id => 1)]
+      validated_data[:properties] = data
+      # TODO: Must define solution to shipping_category_id
+      validated_data[:product]    = validated_data[:product].merge(:shipping_category_id => 1)
+
+      [true, validated_data]
+    end
+
+    def self.set_product_properties product, properties
+      # Add each property to product
+      properties.each do |(property_key, property_value)|
+        product.set_property(property_key, property_value) unless property_value.blank?
+      end
     end
 
   end
