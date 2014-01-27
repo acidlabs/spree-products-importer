@@ -28,15 +28,11 @@ module SpreeProductsImporter
       end
 
       # Creates each product with Spree API
-      products_list.each do |product|
-
-        Spree::Product.create(product[:product])
-
-        # response = HTTParty.get('http://localhost:3000/api/products/new?token=26bc0e875720cfcae1aefb51b9f20a3ba96d86f8d307d96f')
-        # cmr_client = SpreeProductsImporter::CmrClient.new
-        # cmr_client.create_product({product: product})
-        # response = RestClient.post "#{@@api_url_base}/products?token=#{@@api_token}", {product: product}.to_json, {content_type: :json, accept: :json}  
-        # TODO: Add properties to recently created product
+      products_list.each do |product_data|
+        # Create product
+        product = Spree::Product.create product_data[:product]
+        # Set product properties
+        set_product_properties product, product_data[:properties]
       end
 
       return success ? "Products created successfully" : "API error #{e}"
@@ -74,6 +70,13 @@ module SpreeProductsImporter
       validated_data[:product]    = validated_data[:product].merge(:shipping_category_id => 1)
 
       [true, validated_data]
+    end
+
+    def self.set_product_properties product, properties
+      # Add each property to product
+      properties.each do |(property_key, property_value)|
+        product.set_property(property_key, property_value) unless property_value.blank?
+      end
     end
 
   end
