@@ -8,17 +8,21 @@ module SpreeProductsImporter
 
     # Receives a file and the get data from each file row
     def self.get_file_data(file)
-      spreadsheet   = open_spreadsheet(file)
+
+      begin
+        spreadsheet = open_spreadsheet(file)
+      rescue RuntimeError => e
+        return e.message
+      end
+      
       header        = spreadsheet.row(1)
       products_list = []
       api_error     = ""
-      success       = true
 
       # Validates each row element
       (2..spreadsheet.last_row).each do |i|
         row            = Hash[[header, spreadsheet.row(i)].transpose]
-        # TODO: Falta hacer el metodo validate_product_data
-        is_valid, data = validate_product_data row
+        is_valid, data = validate_product_data row, i
 
         if is_valid
           products_list << data
@@ -35,27 +39,29 @@ module SpreeProductsImporter
         set_product_properties product, product_data[:properties]
       end
 
-      return success ? "Products created successfully" : "API error #{e}"
+      return "Products created successfully"
     end
       
     # Receives a file and then returns a Roo object acording the file extension
     def self.open_spreadsheet(file)
-      case File.extname(file.original_filename)
-      when '.csv' then Roo::Csv.new(file.path, nil, :ignore)
-      when '.xls' then Roo::Excel.new(file.path, nil, :ignore)
-      when '.xlsx' then Roo::Excelx.new(file.path, nil, :ignore)
-      else raise "Unknown file type: #{file.original_filename}"
+      filename = File.basename(file)
+
+      case File.extname(filename)
+      when '.csv' then Roo::CSV.new(file.path)
+      when '.xls' then Roo::Excel.new(file.path)
+      when '.xlsx' then Roo::Excelx.new(file.path)
+      else raise "Unknown file type: #{filename}"
       end
     end
 
     # Validate each file row according to required attributes
-    def self.validate_product_data data
+    def self.validate_product_data data, line_number
       required_attributes = ["sku", "name", "price"]
       validated_data = {product: {}, properties: {}}
 
       required_attributes.each do |attr|
         if data[attr].blank?
-          return [false, "An error found at line #{i}: #{attr} is required"]
+          return [false, "An error found at line #{line_number}: #{attr} is required"]
         else
           # Add key => value to normalized and validated hash
           validated_data[:product] = validated_data[:product].merge(attr.to_sym => data[attr])
