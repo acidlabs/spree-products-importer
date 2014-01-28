@@ -8,11 +8,16 @@ module SpreeProductsImporter
 
     # Receives a file and the get data from each file row
     def self.get_file_data(file)
-      spreadsheet   = open_spreadsheet(file)
+
+      begin
+        spreadsheet = open_spreadsheet(file)
+      rescue RuntimeError => e
+        return e.message
+      end
+      
       header        = spreadsheet.row(1)
       products_list = []
       api_error     = ""
-      success       = true
 
       # Validates each row element
       (2..spreadsheet.last_row).each do |i|
@@ -34,7 +39,7 @@ module SpreeProductsImporter
         set_product_properties product, product_data[:properties]
       end
 
-      return success ? "Products created successfully" : "API error #{e}"
+      return "Products created successfully"
     end
       
     # Receives a file and then returns a Roo object acording the file extension

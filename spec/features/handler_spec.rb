@@ -97,4 +97,43 @@ describe "SpreeProductsImporter::Handler" do
 
   end
 
+  describe "#get_file_data" do
+
+    context "with a valid file" do
+      let!(:xlsx_message) { SpreeProductsImporter::Handler.get_file_data File.open("spec/support/products.xlsx", "r") }
+      let!(:xls_message) { SpreeProductsImporter::Handler.get_file_data File.open("spec/support/products.xls", "r") }
+
+      it "returns a success message" do
+        xlsx_message.should eq "Products created successfully"
+        xls_message.should eq "Products created successfully"
+      end
+
+      it "creates 3 Spree::Products" do  
+        Spree::Product.count.should eq(3)
+      end
+
+      it "assigns a specific value to last product" do  
+        Spree::Product.last.name.should eq "Product 3"
+      end
+
+      it "assigns a specific value to first product" do  
+        Spree::Product.first.sku.should eq "1234a"
+      end
+    end
+
+    context "with a invalid file" do
+      let!(:message_error) { SpreeProductsImporter::Handler.get_file_data File.open("spec/support/products.txt", "r") }
+      let!(:xlsx_invalid_message) { SpreeProductsImporter::Handler.get_file_data File.open("spec/support/invalid_products.xlsx", "r") }
+
+      it "return a custom message when the file extension is not correctly" do
+        message_error.should eq "Unknown file type: products.txt"
+      end
+
+      it "return a custom message when the file data is not correctly" do
+        xlsx_invalid_message.should eq "An error found at line 2: name is required"
+      end
+    end
+
+  end
+ 
 end
