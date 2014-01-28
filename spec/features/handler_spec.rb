@@ -67,4 +67,34 @@ describe "SpreeProductsImporter::Handler" do
 
   end
 
+  describe "#open_spread_sheet" do
+
+    context "with a valid file" do
+      it "returns a instance of Roo::Excelx" do
+        data = SpreeProductsImporter::Handler.open_spreadsheet File.open("spec/support/products.xlsx", "r")
+        
+        data.should be_an_instance_of Roo::Excelx
+      end
+
+      it "returns a instance of Roo::Excel" do
+        data = SpreeProductsImporter::Handler.open_spreadsheet File.open("spec/support/products.xls", "r")
+        
+        data.should be_an_instance_of Roo::Excel
+      end
+
+      it "returns a instance of Roo::CSV" do
+        data = SpreeProductsImporter::Handler.open_spreadsheet File.open("spec/support/products.csv", "r")
+        
+        data.should be_an_instance_of Roo::CSV
+      end
+    end
+
+    context "with an invalid file" do
+      it "raises an exception" do
+        lambda { SpreeProductsImporter::Handler.open_spreadsheet File.open("spec/support/products.txt", "r") }.should raise_error
+      end
+    end
+
+  end
+
 end
