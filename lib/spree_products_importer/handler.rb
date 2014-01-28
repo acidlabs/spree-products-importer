@@ -17,8 +17,7 @@ module SpreeProductsImporter
       # Validates each row element
       (2..spreadsheet.last_row).each do |i|
         row            = Hash[[header, spreadsheet.row(i)].transpose]
-        # TODO: Falta hacer el metodo validate_product_data
-        is_valid, data = validate_product_data row
+        is_valid, data = validate_product_data row, i
 
         if is_valid
           products_list << data
@@ -49,13 +48,13 @@ module SpreeProductsImporter
     end
 
     # Validate each file row according to required attributes
-    def self.validate_product_data data
+    def self.validate_product_data data, line_number
       required_attributes = ["sku", "name", "price"]
       validated_data = {product: {}, properties: {}}
 
       required_attributes.each do |attr|
         if data[attr].blank?
-          return [false, "An error found at line #{i}: #{attr} is required"]
+          return [false, "An error found at line #{line_number}: #{attr} is required"]
         else
           # Add key => value to normalized and validated hash
           validated_data[:product] = validated_data[:product].merge(attr.to_sym => data[attr])
