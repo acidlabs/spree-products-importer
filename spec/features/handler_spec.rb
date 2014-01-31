@@ -135,5 +135,35 @@ describe "SpreeProductsImporter::Handler" do
     end
 
   end
+
+  describe '#set_product_categories' do
+
+    context "when taxons is not blank" do
+
+      let!(:properties) { {"taxons" => "asdfg, Category 1, Category 2, Los"} }
+
+      it "add the taxons found to product" do
+
+        product    = FactoryGirl.create(:base_product)
+        taxon_1    = FactoryGirl.create(:taxon, name: "Category 1")
+        taxon_2    = FactoryGirl.create(:taxon, name: "Category 2")
+        taxon_3    = FactoryGirl.create(:taxon, name: "asdf")
+      
+        product.taxons.count.should eq 0
+        SpreeProductsImporter::Handler.set_product_categories product, properties
+
+        product.taxons.should be_include taxon_1
+        product.taxons.should be_include taxon_2
+        product.taxons.should_not be_include taxon_3
+      
+      end
+
+    end
+
+
+
+    
+    
+  end
  
 end

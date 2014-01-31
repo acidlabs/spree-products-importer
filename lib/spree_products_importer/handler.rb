@@ -35,6 +35,8 @@ module SpreeProductsImporter
       products_list.each do |product_data|
         # Create product
         product = Spree::Product.create product_data[:product]
+        # Set product categories(taxons)
+        set_product_categories product, product_data[:properties]
         # Set product properties
         set_product_properties product, product_data[:properties]
       end
@@ -79,10 +81,26 @@ module SpreeProductsImporter
     end
 
     def self.set_product_properties product, properties
+      # If exist remove taxons because they should not be saved as properties
+      properties = properties.delete("taxons") unless properties["taxons"].blank?
       # Add each property to product
       properties.each do |(property_key, property_value)|
         product.set_property(property_key, property_value) unless property_value.blank?
       end
+    end
+
+    def self.set_product_categories product, properties
+
+      unless properties["taxons"].blank?
+        # Clean blank spaces and split by "-" to obtain a categories (taxons) list
+        taxons = properties["taxons"].split(",")
+
+        taxons.each do |taxon_name|
+          taxon = Spree::Taxon.find_by_name(taxon_name.strip)
+          product.taxons << taxon if taxon.presence  
+        end
+      end
+
     end
 
   end
