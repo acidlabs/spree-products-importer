@@ -33,8 +33,8 @@ module SpreeProductsImporter
 
       # Creates each product with Spree API
       products_list.each do |product_data|
-        # Create product
-        product = Spree::Product.create product_data[:product]
+        # Create product (Add shipping_category_id and available_on attributes)
+        product = Spree::Product.create product_data[:product].merge(shipping_category_id: 1, available_on: Time.now)
         # Set product categories(taxons)
         set_product_categories product, product_data[:properties]
         # Set product properties
@@ -75,7 +75,7 @@ module SpreeProductsImporter
 
       validated_data[:properties] = data
       # TODO: Must define solution to shipping_category_id
-      validated_data[:product]    = validated_data[:product].merge(:shipping_category_id => 1)
+      validated_data[:product]    = validated_data[:product]
 
       [true, validated_data]
     end
