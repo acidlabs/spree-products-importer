@@ -46,12 +46,12 @@ module SpreeProductsImporter
       
     # Receives a file and then returns a Roo object acording the file extension
     def self.open_spreadsheet(file)
-      filename = File.basename(file)
+      filename = Rails.env.test? ? File.basename(file) : file.original_filename
 
       case File.extname(filename)
       when '.csv' then Roo::CSV.new(file.path)
-      when '.xls' then Roo::Excel.new(file.path)
-      when '.xlsx' then Roo::Excelx.new(file.path)
+      when ".xls" then Roo::Excel.new(file.path, nil, :ignore)
+      when ".xlsx" then Roo::Excelx.new(file.path, nil, :ignore)
       else raise "Unknown file type: #{filename}"
       end
     end
@@ -82,7 +82,14 @@ module SpreeProductsImporter
 
     def self.set_product_properties product, properties
       # If exist remove taxons because they should not be saved as properties
-      properties = properties.delete("taxons") unless properties["taxons"].blank?
+      unless properties["taxons"].blank?
+        if properties.count < 2
+          properties = {}
+        else  
+          properties = properties.delete("taxons")    
+        end
+      end
+      
       # Add each property to product
       properties.each do |(property_key, property_value)|
         product.set_property(property_key, property_value) unless property_value.blank?
