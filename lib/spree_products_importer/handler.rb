@@ -33,8 +33,8 @@ module SpreeProductsImporter
 
       # Creates each product with Spree API
       products_list.each do |product_data|
-        # Create product
-        product = Spree::Product.create product_data[:product]
+        # Create product (Add shipping_category_id and available_on attributes)
+        product = Spree::Product.create product_data[:product].merge(shipping_category_id: 1, available_on: Time.now)
         # Set product categories(taxons)
         set_product_categories product, product_data[:properties]
         # Set product properties
@@ -46,12 +46,12 @@ module SpreeProductsImporter
       
     # Receives a file and then returns a Roo object acording the file extension
     def self.open_spreadsheet(file)
-      filename = File.basename(file)
+      filename = Rails.env.test? ? File.basename(file) : file.original_filename
 
       case File.extname(filename)
       when '.csv' then Roo::CSV.new(file.path)
-      when '.xls' then Roo::Excel.new(file.path)
-      when '.xlsx' then Roo::Excelx.new(file.path)
+      when ".xls" then Roo::Excel.new(file.path, nil, :ignore)
+      when ".xlsx" then Roo::Excelx.new(file.path, nil, :ignore)
       else raise "Unknown file type: #{filename}"
       end
     end
@@ -75,14 +75,21 @@ module SpreeProductsImporter
 
       validated_data[:properties] = data
       # TODO: Must define solution to shipping_category_id
-      validated_data[:product]    = validated_data[:product].merge(:shipping_category_id => 1)
+      validated_data[:product]    = validated_data[:product]
 
       [true, validated_data]
     end
 
     def self.set_product_properties product, properties
       # If exist remove taxons because they should not be saved as properties
-      properties = properties.delete("taxons") unless properties["taxons"].blank?
+      unless properties["taxons"].blank?
+        if properties.count < 2
+          properties = {}
+        else  
+          properties = properties.delete("taxons")    
+        end
+      end
+      
       # Add each property to product
       properties.each do |(property_key, property_value)|
         product.set_property(property_key, property_value) unless property_value.blank?
