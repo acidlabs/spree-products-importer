@@ -12,7 +12,7 @@ module SpreeProductsImporter
       begin
         spreadsheet = open_spreadsheet(file)
       rescue RuntimeError => e
-        return e.message
+        return [false, e.message]
       end
       
       header        = spreadsheet.row(1)
