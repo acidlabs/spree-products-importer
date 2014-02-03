@@ -1,4 +1,8 @@
-<h2>Import Products</h2>
+<%= render :partial => 'spree/admin/shared/product_sub_menu' %>
+
+<% content_for :page_title do %>
+  <%= Spree.t(:import_products) %>
+<% end %>
 
 <%= form_tag import_spreadsheet_admin_products_path, multipart: true, use_route: "spree" do %>
   <%= file_field_tag :file %>
