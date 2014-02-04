@@ -12,7 +12,7 @@ module SpreeProductsImporter
       begin
         spreadsheet = open_spreadsheet(file)
       rescue RuntimeError => e
-        return e.message
+        return [false, e.message]
       end
       
       header        = spreadsheet.row(1)
@@ -27,7 +27,7 @@ module SpreeProductsImporter
         if is_valid
           products_list << data
         else
-          return data
+          return [false, data]
         end
       end
 
@@ -41,7 +41,7 @@ module SpreeProductsImporter
         set_product_properties product, product_data[:properties]
       end
 
-      return "Products created successfully"
+      return [true, "Products created successfully"]
     end
       
     # Receives a file and then returns a Roo object acording the file extension

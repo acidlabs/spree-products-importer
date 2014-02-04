@@ -104,8 +104,8 @@ describe "SpreeProductsImporter::Handler" do
       let!(:xls_message) { SpreeProductsImporter::Handler.get_file_data File.open("spec/support/products.xls", "r") }
 
       it "returns a success message" do
-        xlsx_message.should eq "Products created successfully"
-        xls_message.should eq "Products created successfully"
+        xlsx_message[1].should eq "Products created successfully"
+        xls_message[1].should eq "Products created successfully"
       end
 
       it "creates 3 Spree::Products" do  
@@ -126,11 +126,11 @@ describe "SpreeProductsImporter::Handler" do
       let!(:xlsx_invalid_message) { SpreeProductsImporter::Handler.get_file_data File.open("spec/support/invalid_products.xlsx", "r") }
 
       it "return a custom message when the file extension is not correctly" do
-        message_error.should eq "Unknown file type: products.txt"
+        message_error[1].should eq "Unknown file type: products.txt"
       end
 
       it "return a custom message when the file data is not correctly" do
-        xlsx_invalid_message.should eq "An error found at line 2: name is required"
+        xlsx_invalid_message[1].should eq "An error found at line 2: name is required"
       end
     end
 
