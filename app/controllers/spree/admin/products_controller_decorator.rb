@@ -20,6 +20,11 @@ module Spree
         redirect_to import_admin_products_path
       end
 
+      def import_template
+        file= File.open(Rails.root.join('lib/templates/example.xls'))
+        send_data file.read, :filename => "example.xls"
+      end
+
     end
 
   end

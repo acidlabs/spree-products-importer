@@ -6,6 +6,7 @@ Spree::Core::Engine.routes.draw do
 
       collection do
         get :import
+        get :import_template
         post :import_spreadsheet
       end
       
