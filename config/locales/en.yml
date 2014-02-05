@@ -2,4 +2,10 @@
 # See https://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
 en:
-  hello: "Hello world"
+  spree:
+    spree_products_importer:
+      products:
+        import:
+          title: "Import Products"
+          download_message: "Download an example file"
+          template_link_text: "here"
