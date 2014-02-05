@@ -117,8 +117,15 @@ describe "SpreeProductsImporter::Handler" do
       end
 
       it "assigns a specific value to first product" do  
-        Spree::Product.first.sku.should eq "1234a"
+        Spree::Product.first.price.should eq 30
       end
+
+      context "with a numeric sku" do
+        it "saves correctly the value without decimal values" do
+          Spree::Product.first.sku.should eq "1234"
+        end
+      end
+
     end
 
     context "with a invalid file" do
@@ -160,10 +167,6 @@ describe "SpreeProductsImporter::Handler" do
 
     end
 
-
-
-    
-    
   end
  
 end

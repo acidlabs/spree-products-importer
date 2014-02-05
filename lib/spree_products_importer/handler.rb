@@ -65,8 +65,16 @@ module SpreeProductsImporter
         if data[attr].blank?
           return [false, "An error found at line #{line_number}: #{attr} is required"]
         else
+
+          # When sku is numeric remove the decimal values
+          if attr == "sku" and data[attr].is_a? Numeric
+            attr_value = data[attr].to_i
+          else
+            attr_value = data[attr] 
+          end
+
           # Add key => value to normalized and validated hash
-          validated_data[:product] = validated_data[:product].merge(attr.to_sym => data[attr])
+          validated_data[:product] = validated_data[:product].merge(attr.to_sym => attr_value)
 
           # Remove validate element
           data.delete(attr)
