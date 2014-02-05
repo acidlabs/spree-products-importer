@@ -9,3 +9,4 @@ en:
           title: "Import Products"
           download_message: "Download an example file"
           template_link_text: "here"
+          submit_text: "Import"

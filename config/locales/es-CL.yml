@@ -15,3 +15,4 @@ es-CL:
           title: "Importar Productos"
           download_message: "Descargar plantilla de ejemplo"
           template_link_text: "aquí"
+          submit_text: "Importar"
