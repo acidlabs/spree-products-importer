@@ -14,7 +14,7 @@ module SpreeProductsImporter
       rescue RuntimeError => e
         return [false, e.message]
       end
-      
+
       header        = spreadsheet.row(1)
       products_list = []
       api_error     = ""
@@ -43,7 +43,7 @@ module SpreeProductsImporter
 
       return [true, "Products created successfully"]
     end
-      
+
     # Receives a file and then returns a Roo object acording the file extension
     def self.open_spreadsheet(file)
       filename = Rails.env.test? ? File.basename(file) : file.original_filename
@@ -70,7 +70,7 @@ module SpreeProductsImporter
           if attr == "sku" and data[attr].is_a? Numeric
             attr_value = data[attr].to_i
           else
-            attr_value = data[attr] 
+            attr_value = data[attr]
           end
 
           # Add key => value to normalized and validated hash
@@ -93,11 +93,11 @@ module SpreeProductsImporter
       unless properties["taxons"].blank?
         if properties.count < 2
           properties = {}
-        else  
-          properties = properties.delete("taxons")    
+        else
+          properties = properties.delete("taxons")
         end
       end
-      
+
       # Add each property to product
       properties.each do |(property_key, property_value)|
         product.set_property(property_key, property_value) unless property_value.blank?
@@ -112,7 +112,7 @@ module SpreeProductsImporter
 
         taxons.each do |taxon_name|
           taxon = Spree::Taxon.find_by_name(taxon_name.strip)
-          product.taxons << taxon if taxon.presence  
+          product.taxons << taxon if taxon.presence
         end
       end
 

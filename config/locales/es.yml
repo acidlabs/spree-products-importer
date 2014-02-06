@@ -1,0 +1,18 @@
+es:
+  spree:
+    date:
+      abbr_day_names:
+      - dom
+      - lun
+      - mar
+      - mié
+      - jue
+      - vie
+      - sáb
+    spree_products_importer:
+      products:
+        import:
+          title: "Importar Productos"
+          download_message: "Descargar plantilla de ejemplo"
+          template_link_text: "aquí"
+          submit_text: "Importar"
