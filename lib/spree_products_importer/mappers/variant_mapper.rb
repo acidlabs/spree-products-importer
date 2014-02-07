@@ -6,7 +6,7 @@ module SpreeProductsImporter
       #
       # Returns an Symbol
       def self.data
-        :variants
+        :variant
       end
     end
   end
