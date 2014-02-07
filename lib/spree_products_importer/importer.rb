@@ -118,7 +118,7 @@ module SpreeProductsImporter
       def self.get_data row_index
         data = default_hash
 
-        # Reviso si el producto existe
+        # Check if the product exists
         unformat_product_identifier = @spreadsheet.cell(row_index, @product_identifier[:column])
         product_identifier          = @product_identifier[:mapper].parse unformat_product_identifier, @product_identifier[:type]
         if Spree::Product.exists?({@product_identifier[:name] => product_identifier})
@@ -129,11 +129,11 @@ module SpreeProductsImporter
         @attributes.each do |attribute|
           value = attribute[:mapper].parse @spreadsheet.cell(row_index, attribute[:column]), attribute[:type]
 
-          # TODO - se pueden omitir datos obligatorios si el producto ya existe
+          # TODO - Required data may be omitted if the product already exists
           raise [false, I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: attribute[:name])] if value.nil? and attribute[:required]
 
           if attribute[:mapper].data == :product
-            # Si tengo el ID del producto no hago nada proque no se va a editar el producto
+            # If I have the ID of the product do nothing because it is not going to edit the product
             next if data[:product][:id]
 
             data[:product][attribute[:name]] = value

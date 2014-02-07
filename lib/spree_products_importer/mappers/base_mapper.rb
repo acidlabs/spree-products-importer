@@ -23,7 +23,7 @@ module SpreeProductsImporter
       #
       # Returns an Symbol
       def self.data
-        raise 'You must define this function and return the correct value, the available settings are: [:product, :variants, :taxonomies, :properties]'
+        raise 'You must define this function and return the correct value, the available settings are: [:product, :variants, :taxons, :properties, :aditionals]'
       end
     end
   end
