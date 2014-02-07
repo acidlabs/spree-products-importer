@@ -34,11 +34,15 @@ module SpreeProductsImporter
           return e.message
         end
 
+        set_import_currency
+
         make_products   row
         make_variants   row
-        make_taxonomies row
+        make_taxons     row
         make_properties row
         make_aditionals row
+
+        restore_correct_currency
       end
 
       return I18n.t(:products_created_successfully, scope: [:spree, :spree_products_importer, :messages])
@@ -53,20 +57,28 @@ module SpreeProductsImporter
     end
 
     private
+      # Set the currency for Import
+      def self.set_import_currency
+        # Store current currency
+        current_currency = Spree::Config[:currency]
+
+        # Sets the correct currency for import
+        Spree::Config[:currency] = @currency
+      end
+
+      # Restore the correct currency after Import
+      def self.restore_correct_currency
+        # Store current currency
+        current_currency = Spree::Config[:currency]
+
+        # Sets the correct currency for import
+        Spree::Config[:currency] = @currency
+      end
+
       # Is responsible for creating the Product
       def self.make_products row
         if row[:product][:id].nil?
-          # Store current currency
-          current_currency = Spree::Config[:currency]
-
-          # Sets the correct currency for import
-          Spree::Config[:currency] = @currency
-
-          default_shipping_category = Spree::ShippingCategory.find_by_name!("Default")
           product = Spree::Product.create! row[:product]
-
-          # Restore the correct currency
-          Spree::Config[:currency] = current_currency
 
           # Store the Product :id in the row Hash data
           row[:product] = {id: product.id}
@@ -77,6 +89,14 @@ module SpreeProductsImporter
 
       # Is responsible for creating the Variant
       def self.make_variants row
+        if row[:product][:id].nil?
+          raise [false, I18n.t(:product_not_found, scope: [:spree, :spree_products_importer, :messages])]
+        else
+          variant = Spree::Variant.create! row[:variant].merge({product_id: row[:product][:id]})
+
+          # Store the Variant :id in the row Hash data
+          row[:variant][:id] = variant.id
+        end
       end
 
       # Is responsible for creating the Taxon's
@@ -148,8 +168,8 @@ module SpreeProductsImporter
         filename = Rails.env.test? ? File.basename(file) : file.original_filename
 
         case File.extname(filename)
-          when '.csv'  then @spreadsheet = Roo::CSV.new(file.path)
-          when '.xls'  then @spreadsheet = Roo::Excel.new(file.path, nil, :ignore)
+          # when '.csv'  then @spreadsheet = Roo::CSV.new(file.path)
+          # when '.xls'  then @spreadsheet = Roo::Excel.new(file.path, nil, :ignore)
           when '.xlsx' then @spreadsheet = Roo::Excelx.new(file.path, nil, :ignore)
           else raise [false, I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], filename: filename)]
         end
