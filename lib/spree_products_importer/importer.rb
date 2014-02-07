@@ -7,6 +7,8 @@ module SpreeProductsImporter
   class Importer
     @spreadsheet = nil
 
+    @image_path = "public/importer/"
+
     @currency = 'USD'
 
     @product_identifier = {name: :name, column: 'A', type: nil, mapper: Mappers::ProductMapper}
@@ -31,7 +33,7 @@ module SpreeProductsImporter
 
       # Validates each row element
       2.upto(@spreadsheet.last_row).each do |row_index|
-        begin
+        #begin
           row = get_data(row_index)
 
           make_products   row
@@ -39,19 +41,16 @@ module SpreeProductsImporter
           make_taxons     row
           make_properties row
           make_aditionals row
+          make_images     row
 
-        rescue RuntimeError => e
-          raise "EN RuntimeError"
-
-          return e.message
-        rescue
-          raise "EN Generic Error"
-
-          return I18n.t(:products_cannot_be_created, scope: [:spree, :spree_products_importer, :messages])
-        ensure
-          # Restore the correct currency after Import
-          restore_correct_currency
-        end
+        # rescue RuntimeError => e
+        #   return e.message
+        # rescue => e
+        #   return e.message
+        # ensure
+        #   # Restore the correct currency after Import
+        #   restore_correct_currency
+        # end
       end
 
       return I18n.t(:products_created_successfully, scope: [:spree, :spree_products_importer, :messages])
@@ -67,7 +66,8 @@ module SpreeProductsImporter
         variant: {},
         taxons: [],
         properties: [],
-        aditionals: []
+        aditionals: [],
+        images: []
       }
     end
 
@@ -120,16 +120,34 @@ module SpreeProductsImporter
 
       # Is responsible for creating the Properties imports
       def self.make_properties row
+        # Spree::ProductProperty(value: string, product_id: integer, property_name: string)
       end
 
       # Is responsible for creating the Aditionals imports
       def self.make_aditionals row
       end
 
-      # TODO - Import Variants
-      # TODO - Import Taxons
+      # Is responsible for creating the Images
+      def self.make_images row
+        # Spree::Image(viewable_id: integer, viewable_type: string, attachment:File, type: string, alt: text)
+        product = Spree::Product.find row[:product][:id]
+        master  = product.master
+
+        row[:images].each do |name|
+          path = @image_path + name
+          file = File.open(Rails.root + path)
+
+          image = Spree::Image.new
+          image.viewable = master
+          image.attachment = file
+          image.type = 'Spree::Image'
+          image.alt = ''
+
+          image.save!
+        end
+      end
+
       # TODO - Import Properties
-      # TODO - Import Aditionals
       def self.get_data row_index
         data = default_hash
 
@@ -142,10 +160,13 @@ module SpreeProductsImporter
         end
 
         @attributes.each do |attribute|
-          value = attribute[:mapper].parse @spreadsheet.cell(row_index, attribute[:column]), attribute[:type]
+          cell = @spreadsheet.cell(row_index, attribute[:column])
 
           # TODO - Required data may be omitted if the product already exists
-          raise [false, I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: attribute[:name])] if value.nil? and attribute[:required]
+          raise [false, I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: attribute[:name])] if cell.nil? and attribute[:required]
+
+          next if cell.nil?
+          value = attribute[:mapper].parse cell, attribute[:type]
 
           if attribute[:mapper].data == :product
             # If I have the ID of the product do nothing because it is not going to edit the product
@@ -168,17 +189,30 @@ module SpreeProductsImporter
               data[:variant][attribute[:name]] = value
             end
 
-          # TODO
+          # TODO - taxons cargados independiente de un producto, ahora se esta usando taxon_ids=
           # elsif attribute[:mapper].data == :taxons
           #  taxon[attribute[:name]] = value
-          #
+
           # TODO
           # elsif attribute[:mapper].data == :properties
           #  property[attribute[:name]] = value
           #
-          # TODO
-          # elsif attribute[:mapper].data == :aditionals
-          #  aditional[attribute[:name]] = value
+          elsif attribute[:mapper].data == :aditionals
+            if attribute[:type] == Mappers::BaseMapper::ARRAY_TYPE
+              data[:aditionals][attribute[:name]] = [] if data[:aditionals][attribute[:name]].nil?
+
+              data[:aditionals][attribute[:name]] += value
+            else
+              data[:aditionals][attribute[:name]] = value
+            end
+          elsif attribute[:mapper].data == :images
+            data[:images] = [] if data[:images].nil?
+
+            if value.class == Array
+              data[:images] += value
+            else
+              data[:images] << value
+            end
           end
         end
 

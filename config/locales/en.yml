@@ -16,3 +16,4 @@ en:
         unknown_file_type: "Unknown file type: %{filename}"
         product_not_found: Product not found
         products_cannot_be_created: "Products cannot be created"
+        taxonomy_not_found: "Taxonomy not found"

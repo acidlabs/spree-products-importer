@@ -1,7 +1,7 @@
 #encoding: utf-8
 module SpreeProductsImporter
   module Mappers
-    class TaxonMapper < SpreeProductsImporter::Mappers::BaseMapper
+    class TaxonNameMapper < SpreeProductsImporter::Mappers::BaseMapper
       # Indicates that the field is stored in the data Hash for a Taxonomy
       #
       # Returns an Symbol
@@ -10,9 +10,9 @@ module SpreeProductsImporter
       end
 
       def self.make_ids_array value
-        Mappers::BaseMapper.make_ids_array(value).map do |code|
-          if Spree::Taxon.exists?({code: code})
-            Spree::Taxon.find_by({code: code}).id
+        Mappers::BaseMapper.make_ids_array(value).map do |name|
+          if Spree::Taxon.exists?({name: name})
+            Spree::Taxon.find_by({name: name}).id
           else
             nil
           end

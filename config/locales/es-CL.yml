@@ -22,3 +22,4 @@ es-CL:
         unknown_file_type: "Tipo de archivo desconcido: %{filename}"
         product_not_found: Producto no encontrado
         products_cannot_be_created: "Productos no se pueden crear"
+        taxonomy_not_found: "Taxonomía no encontrada"
