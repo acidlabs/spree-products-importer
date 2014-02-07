@@ -4,9 +4,9 @@ module SpreeProductsImporter
     class BaseMapper
       STRING_TYPE  = 'string'
       INTEGER_TYPE = 'integer'
-      ARRAY_TYPE   = 'integer'
+      ARRAY_TYPE   = 'array'
 
-      def splitter
+      def self.splitter
         ','
       end
 
@@ -14,9 +14,13 @@ module SpreeProductsImporter
         case type
           when STRING_TYPE  then value.to_i.to_s
           when INTEGER_TYPE then value.to_i
-          when ARRAY_TYPE   then value.to_i.to_s.split(splitter)
+          when ARRAY_TYPE   then make_ids_array(value)
           else return value
         end
+      end
+
+      def self.make_ids_array value
+        value.class == Float ? [value.to_i.to_s] : value.split(splitter)
       end
 
       # Indicates the section where field is stored in the data Hash

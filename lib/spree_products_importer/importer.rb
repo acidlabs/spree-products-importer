@@ -9,7 +9,7 @@ module SpreeProductsImporter
 
     @currency = 'USD'
 
-    @product_identifier = {name: :name, column: 'A', type: Mappers::BaseMapper::STRING_TYPE, mapper: Mappers::ProductMapper}
+    @product_identifier = {name: :name, column: 'A', type: nil, mapper: Mappers::ProductMapper}
 
     @attributes = [
                     {required: true,  name: :name,   column: 'A', type: nil,                               mapper: Mappers::ProductMapper},
@@ -26,23 +26,32 @@ module SpreeProductsImporter
         return e.message
       end
 
+      # Set the currency for Import
+      set_import_currency
+
       # Validates each row element
       2.upto(@spreadsheet.last_row).each do |row_index|
         begin
           row = get_data(row_index)
+
+          make_products   row
+          make_variants   row
+          make_taxons     row
+          make_properties row
+          make_aditionals row
+
         rescue RuntimeError => e
+          raise "EN RuntimeError"
+
           return e.message
+        rescue
+          raise "EN Generic Error"
+
+          return I18n.t(:products_cannot_be_created, scope: [:spree, :spree_products_importer, :messages])
+        ensure
+          # Restore the correct currency after Import
+          restore_correct_currency
         end
-
-        set_import_currency
-
-        make_products   row
-        make_variants   row
-        make_taxons     row
-        make_properties row
-        make_aditionals row
-
-        restore_correct_currency
       end
 
       return I18n.t(:products_created_successfully, scope: [:spree, :spree_products_importer, :messages])
@@ -53,7 +62,13 @@ module SpreeProductsImporter
     #
     # Returns an Hash
     def self.default_hash
-      {product: {}, variant: {}, taxons: [], properties: []}
+      {
+        product: {},
+        variant: {},
+        taxons: [],
+        properties: [],
+        aditionals: []
+      }
     end
 
     private
@@ -136,10 +151,22 @@ module SpreeProductsImporter
             # If I have the ID of the product do nothing because it is not going to edit the product
             next if data[:product][:id]
 
-            data[:product][attribute[:name]] = value
+            if attribute[:type] == Mappers::BaseMapper::ARRAY_TYPE
+              data[:product][attribute[:name]] = [] if data[:product][attribute[:name]].nil?
+
+              data[:product][attribute[:name]] += value
+            else
+              data[:product][attribute[:name]] = value
+            end
 
           elsif attribute[:mapper].data == :variant
-            data[:variant][attribute[:name]] = value
+            if attribute[:type] == Mappers::BaseMapper::ARRAY_TYPE
+              data[:variant][attribute[:name]] = [] if data[:variant][attribute[:name]].nil?
+
+              data[:variant][attribute[:name]] += value
+            else
+              data[:variant][attribute[:name]] = value
+            end
 
           # TODO
           # elsif attribute[:mapper].data == :taxons

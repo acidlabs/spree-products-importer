@@ -20,3 +20,5 @@ es-CL:
         products_created_successfully: "Productos creados con éxito"
         an_error_found: "Se encuentró un error en la línea %{row}, :%{attribute} es obligatorio"
         unknown_file_type: "Tipo de archivo desconcido: %{filename}"
+        product_not_found: Producto no encontrado
+        products_cannot_be_created: "Productos no se pueden crear"

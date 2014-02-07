@@ -14,3 +14,5 @@ en:
         products_created_successfully: "Products created successfully"
         an_error_found: "An error found at line %{row}, :%{attribute} is required"
         unknown_file_type: "Unknown file type: %{filename}"
+        product_not_found: Product not found
+        products_cannot_be_created: "Products cannot be created"
