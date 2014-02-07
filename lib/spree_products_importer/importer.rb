@@ -66,7 +66,7 @@ module SpreeProductsImporter
         variant: {},
         taxons: [],
         properties: [],
-        aditionals: [],
+        aditionals: {},
         images: []
       }
     end
@@ -107,7 +107,16 @@ module SpreeProductsImporter
         if row[:product][:id].nil?
           raise [false, I18n.t(:product_not_found, scope: [:spree, :spree_products_importer, :messages])]
         else
-          variant = Spree::Variant.create! row[:variant].merge({product_id: row[:product][:id]})
+          product = Spree::Product.find(row[:product][:id])
+
+          if product.variants.where(sku: row[:variant][:sku]).any?
+            variant = product.variants.where(sku: row[:variant][:sku]).last
+
+            # TODO - Preguntar si se va a actualizar o no
+
+          else
+            variant = Spree::Variant.create! row[:variant].merge({product_id: row[:product][:id]})
+          end
 
           # Store the Variant :id in the row Hash data
           row[:variant][:id] = variant.id
