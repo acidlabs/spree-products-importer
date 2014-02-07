@@ -1,9 +1,9 @@
 #encoding: utf-8
+
 require 'roo'
 require 'httparty'
 
 module SpreeProductsImporter
-
   class Importer
     @spreadsheet = nil
 
@@ -44,6 +44,10 @@ module SpreeProductsImporter
       return I18n.t(:products_created_successfully, scope: [:spree, :spree_products_importer, :messages])
     end
 
+    # Defines the hash with default data and structure used to read the data in each row from excel
+    # This allows easy customizations, overwriting this function
+    #
+    # Returns an Hash
     def self.default_hash
       {product: {}, variant: {}, taxons: [], properties: []}
     end
