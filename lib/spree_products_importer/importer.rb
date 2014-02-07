@@ -138,7 +138,7 @@ module SpreeProductsImporter
         data
       end
 
-      # Receives a file instnace and then returns a Roo object acording the file extension
+      # Receives a file instance and then returns a Roo object acording the file extension
       #
       # @params:
       #   file     File   -  a file intance with data to load
