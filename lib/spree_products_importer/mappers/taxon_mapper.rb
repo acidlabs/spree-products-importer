@@ -1,7 +1,7 @@
 #encoding: utf-8
 module SpreeProductsImporter
   module Mappers
-    class TaxonoMapper < SpreeProductsImporter::Mappers::BaseMapper
+    class TaxonMapper < SpreeProductsImporter::Mappers::BaseMapper
       # Indicates that the field is stored in the data Hash for a Taxonomy
       #
       # Returns an Symbol
