@@ -14,6 +14,8 @@ module SpreeProductsImporter
     initializer "spree.importer.preferences", :before => :load_config_initializers do |app|
       Spree::AppConfiguration.class_eval do
         preference :importer, :string, :default => SpreeProductsImporter::Handler
+        preference :import_currency, :string, :default => 'USD'
+        preference :images_importer_files_path, :string, :default => 'public/importer/'
       end
     end
 

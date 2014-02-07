@@ -7,17 +7,16 @@ module SpreeProductsImporter
   class Importer
     @spreadsheet = nil
 
-    @image_path = "public/importer/"
+    @current_currency = nil
 
-    @currency = 'USD'
-
+    # TODO - remover dependencia de mapper
     @product_identifier = {name: :name, column: 'A', type: nil, mapper: Mappers::ProductMapper}
 
     @attributes = [
-                    {required: true,  name: :name,   column: 'A', type: nil,                               mapper: Mappers::ProductMapper},
-                    {required: true,  name: :price,  column: 'B', type: Mappers::BaseMapper::INTEGER_TYPE, mapper: Mappers::ProductMapper},
-                    {required: true,  name: :sku,    column: 'C', type: Mappers::BaseMapper::STRING_TYPE,  mapper: Mappers::VariantMapper},
-                    {required: true,  name: :taxons, column: 'D', type: Mappers::BaseMapper::ARRAY_TYPE,   mapper: Mappers::TaxonMapper  },
+                    {required: true, name: :name,   column: 'A', type: nil,                               mapper: Mappers::ProductMapper},
+                    {required: true, name: :price,  column: 'B', type: Mappers::BaseMapper::INTEGER_TYPE, mapper: Mappers::ProductMapper},
+                    {required: true, name: :sku,    column: 'C', type: Mappers::BaseMapper::STRING_TYPE,  mapper: Mappers::VariantMapper},
+                    {required: true, name: :taxons, column: 'D', type: Mappers::BaseMapper::ARRAY_TYPE,   mapper: Mappers::TaxonMapper  },
                   ]
 
     # Receives a file and the get data from each file row
@@ -33,15 +32,15 @@ module SpreeProductsImporter
 
       # Validates each row element
       2.upto(@spreadsheet.last_row).each do |row_index|
-        #begin
+        # begin
           row = get_data(row_index)
 
           make_products   row
           make_variants   row
           make_taxons     row
           make_properties row
-          make_aditionals row
           make_images     row
+          make_aditionals row
 
         # rescue RuntimeError => e
         #   return e.message
@@ -62,12 +61,12 @@ module SpreeProductsImporter
     # Returns an Hash
     def self.default_hash
       {
-        product: {},
-        variant: {},
-        taxons: [],
-        properties: [],
-        aditionals: {},
-        images: []
+        product: {},      # {attribute1: VALUE_OR_VALUES, attribute2: VALUE_OR_VALUES, ...}
+        variant: {},      # {attribute1: VALUE_OR_VALUES, attribute2: VALUE_OR_VALUES, ...}
+        taxons: [],       # [taxon1, taxon2, ......]
+        properties: [],   # [{property_name1: PROPERTY_VALUE}, {property_name2: PROPERTY_VALUE}, ....]
+        images: [],       # [file_name1, file_name2, ......]
+        aditionals: {}    # {aditional1: ADITIONAL_VALUE_OR_VALUES, aditional2: ADITIONAL_VALUE_OR_VALUES, ....}
       }
     end
 
@@ -75,19 +74,25 @@ module SpreeProductsImporter
       # Set the currency for Import
       def self.set_import_currency
         # Store current currency
-        current_currency = Spree::Config[:currency]
+        @current_currency = Spree::Config[:currency]
 
         # Sets the correct currency for import
-        Spree::Config[:currency] = @currency
+        Spree::Config[:currency] = Spree::Config[:import_currency]
       end
 
       # Restore the correct currency after Import
       def self.restore_correct_currency
-        # Store current currency
-        current_currency = Spree::Config[:currency]
-
         # Sets the correct currency for import
-        Spree::Config[:currency] = @currency
+        Spree::Config[:currency] = @current_currency
+      end
+
+      # Find and returns a Product or raise an error
+      def self.find_product row
+        # Reviso que este seteado el :id del Product
+        raise [false, I18n.t(:product_not_found, scope: [:spree, :spree_products_importer, :messages])] if row[:product][:id].nil?
+
+        # Find Product by :id
+        Spree::Product.find(row[:product][:id])
       end
 
       # Is responsible for creating the Product
@@ -99,133 +104,119 @@ module SpreeProductsImporter
           row[:product] = {id: product.id}
         else
           # Product already exists
+          # TODO - Ver si se van a actualizar los datos del Product
         end
       end
 
       # Is responsible for creating the Variant
       def self.make_variants row
-        if row[:product][:id].nil?
-          raise [false, I18n.t(:product_not_found, scope: [:spree, :spree_products_importer, :messages])]
+        product = find_product row
+
+        if product.variants.where(sku: row[:variant][:sku]).any?
+          variant = product.variants.where(sku: row[:variant][:sku]).last
+
+          # TODO - Ver si se van a actualizar los datos de la Variant
         else
-          product = Spree::Product.find(row[:product][:id])
-
-          if product.variants.where(sku: row[:variant][:sku]).any?
-            variant = product.variants.where(sku: row[:variant][:sku]).last
-
-            # TODO - Preguntar si se va a actualizar o no
-
-          else
-            variant = Spree::Variant.create! row[:variant].merge({product_id: row[:product][:id]})
-          end
-
-          # Store the Variant :id in the row Hash data
-          row[:variant][:id] = variant.id
+          variant = Spree::Variant.create! row[:variant].merge({product_id: row[:product][:id]})
         end
+
+        # Store the Variant :id in the row Hash data
+        row[:variant][:id] = variant.id
       end
 
       # Is responsible for creating the Taxon's
       def self.make_taxons row
+        # TODO - Implementar
       end
 
-      # Is responsible for creating the Properties imports
+      # Is responsible for creating the ProductProperties imports
       def self.make_properties row
-        # Spree::ProductProperty(value: string, product_id: integer, property_name: string)
-      end
+        product = find_product row
 
-      # Is responsible for creating the Aditionals imports
-      def self.make_aditionals row
+        row[:properties].each do |property|
+          property.keys.each do |property_name|
+            # TODO - Revisar si ya existe la <PropertyName - PropertyValue>
+            Spree::ProductProperty.create! value: property[property_name.to_sym], product_id: product.id, property_name: property_name.to_s
+          end
+        end
       end
 
       # Is responsible for creating the Images
       def self.make_images row
-        # Spree::Image(viewable_id: integer, viewable_type: string, attachment:File, type: string, alt: text)
-        product = Spree::Product.find row[:product][:id]
+        product = find_product row
         master  = product.master
 
         row[:images].each do |name|
-          path = @image_path + name
+          # TODO - Revisar si ya existe la Image
+
+          path = Spree::Config[:images_importer_files_path] + name
           file = File.open(Rails.root + path)
 
           image = Spree::Image.new
-          image.viewable = master
+          image.viewable   = master
           image.attachment = file
-          image.type = 'Spree::Image'
-          image.alt = ''
+          image.type       = 'Spree::Image'
+          image.alt        = ''
 
           image.save!
         end
       end
 
+      # Is responsible for creating the Aditionals imports
+      def self.make_aditionals row
+        # Overrides this function to add aditionals or customs imports
+      end
+
       # TODO - Import Properties
       def self.get_data row_index
-        data = default_hash
+        parsed_data = default_hash
 
         # Check if the product exists
         unformat_product_identifier = @spreadsheet.cell(row_index, @product_identifier[:column])
         product_identifier          = @product_identifier[:mapper].parse unformat_product_identifier, @product_identifier[:type]
         if Spree::Product.exists?({@product_identifier[:name] => product_identifier})
-          data[:product]      = {}
-          data[:product][:id] = Spree::Product.find_by({@product_identifier[:name] => product_identifier}).id
+          parsed_data[:product]      = {}
+          parsed_data[:product][:id] = Spree::Product.find_by({@product_identifier[:name] => product_identifier}).id
         end
 
         @attributes.each do |attribute|
-          cell = @spreadsheet.cell(row_index, attribute[:column])
+          column      = attribute[:column]
+          fieldname   = attribute[:name]
+          mapper      = attribute[:mapper]
+          required    = attribute[:required]
+          type_parser = attribute[:type]
+          section     = mapper.data
+
+
+          cell = @spreadsheet.cell(row_index, column)
 
           # TODO - Required data may be omitted if the product already exists
-          raise [false, I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: attribute[:name])] if cell.nil? and attribute[:required]
+          raise [false, I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: fieldname)] if cell.nil? and required
 
           next if cell.nil?
-          value = attribute[:mapper].parse cell, attribute[:type]
+          value_or_values = mapper.parse cell, type_parser
 
-          if attribute[:mapper].data == :product
-            # If I have the ID of the product do nothing because it is not going to edit the product
-            next if data[:product][:id]
+          # If I have the ID of the product do nothing because it is not going to edit the product
+          next if parsed_data[:product][:id] if section == :product
 
-            if attribute[:type] == Mappers::BaseMapper::ARRAY_TYPE
-              data[:product][attribute[:name]] = [] if data[:product][attribute[:name]].nil?
-
-              data[:product][attribute[:name]] += value
+          if [:images, :taxons, :properties].include? section
+            if value_or_values.class == Array
+              parsed_data[section] += value_or_values
             else
-              data[:product][attribute[:name]] = value
+              parsed_data[section] << value_or_values
             end
+          else
+            if type_parser == Mappers::BaseMapper::ARRAY_TYPE
+              parsed_data[section][fieldname] = [] if parsed_data[section][fieldname].nil?
 
-          elsif attribute[:mapper].data == :variant
-            if attribute[:type] == Mappers::BaseMapper::ARRAY_TYPE
-              data[:variant][attribute[:name]] = [] if data[:variant][attribute[:name]].nil?
-
-              data[:variant][attribute[:name]] += value
+              parsed_data[section][fieldname] += value_or_values
             else
-              data[:variant][attribute[:name]] = value
-            end
-
-          # TODO - taxons cargados independiente de un producto, ahora se esta usando taxon_ids=
-          # elsif attribute[:mapper].data == :taxons
-          #  taxon[attribute[:name]] = value
-
-          # TODO
-          # elsif attribute[:mapper].data == :properties
-          #  property[attribute[:name]] = value
-          #
-          elsif attribute[:mapper].data == :aditionals
-            if attribute[:type] == Mappers::BaseMapper::ARRAY_TYPE
-              data[:aditionals][attribute[:name]] = [] if data[:aditionals][attribute[:name]].nil?
-
-              data[:aditionals][attribute[:name]] += value
-            else
-              data[:aditionals][attribute[:name]] = value
-            end
-          elsif attribute[:mapper].data == :images
-            data[:images] = [] if data[:images].nil?
-
-            if value.class == Array
-              data[:images] += value
-            else
-              data[:images] << value
+              parsed_data[section][fieldname] = value_or_values
             end
           end
         end
 
-        data
+        parsed_data
       end
 
       # Receives a file instance and then returns a Roo object acording the file extension

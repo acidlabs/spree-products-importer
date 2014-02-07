@@ -27,6 +27,7 @@ module SpreeProductsImporter
       #
       # Returns an Symbol
       def self.data
+        # TODO - quitar dependencia de esta funcion
         raise 'You must define this function and return the correct value, the available settings are: [:product, :variants, :taxons, :properties, :aditionals]'
       end
     end
