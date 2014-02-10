@@ -215,7 +215,7 @@ module SpreeProductsImporter
               parsed_data[section] << value_or_values
             end
 
-          else
+          else # :product, :variant, :aditionals
             if type_parser == Mappers::BaseMapper::ARRAY_TYPE
               parsed_data[section][fieldname] = [] if parsed_data[section][fieldname].nil?
 
