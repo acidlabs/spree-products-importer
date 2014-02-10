@@ -23,3 +23,4 @@ es-CL:
         product_not_found: Producto no encontrado
         products_cannot_be_created: "Productos no se pueden crear"
         taxonomy_not_found: "Taxonomía no encontrada"
+        invalid_format: 'Formato invalido'

@@ -12,7 +12,7 @@ module SpreeProductsImporter
 
       def self.parse value, type
         case type
-          when STRING_TYPE  then value.to_i.to_s
+          when STRING_TYPE  then value.class == Float ? value.to_i.to_s : value.to_s
           when INTEGER_TYPE then value.to_i
           when ARRAY_TYPE   then make_ids_array(value)
           else return value

@@ -30,10 +30,13 @@ module SpreeProductsImporter
       # Set the currency for Import
       set_import_currency
 
+      puts "READING:"
+
       # Validates each row element
       2.upto(@spreadsheet.last_row).each do |row_index|
         # begin
           row = get_data(row_index)
+          puts "row#{row_index} - #{row.inspect}"
 
           make_products   row
           make_variants   row
@@ -136,7 +139,7 @@ module SpreeProductsImporter
         row[:properties].each do |property|
           property.keys.each do |property_name|
             # TODO - Revisar si ya existe la <PropertyName - PropertyValue>
-            Spree::ProductProperty.create! value: property[property_name.to_sym], product_id: product.id, property_name: property_name.to_s
+            Spree::ProductProperty.create! value: property[property_name], product_id: product.id, property_name: property_name.to_s
           end
         end
       end
@@ -199,12 +202,19 @@ module SpreeProductsImporter
           # If I have the ID of the product do nothing because it is not going to edit the product
           next if parsed_data[:product][:id] if section == :product
 
-          if [:images, :taxons, :properties].include? section
+          if section == :properties
+            colname = @spreadsheet.cell(1, column)
+            value_or_values.each do |value|
+              parsed_data[section] << {colname => value}
+            end
+
+          elsif [:images, :taxons].include? section
             if value_or_values.class == Array
               parsed_data[section] += value_or_values
             else
               parsed_data[section] << value_or_values
             end
+
           else
             if type_parser == Mappers::BaseMapper::ARRAY_TYPE
               parsed_data[section][fieldname] = [] if parsed_data[section][fieldname].nil?
