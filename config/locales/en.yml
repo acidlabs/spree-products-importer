@@ -3,6 +3,9 @@
 
 en:
   spree:
+    admin:
+      tab:
+        import: Importar
     spree_products_importer:
       products:
         import:

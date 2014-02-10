@@ -1,5 +1,8 @@
 es:
   spree:
+    admin:
+      tab:
+        import: Importar
     date:
       abbr_day_names:
       - dom
