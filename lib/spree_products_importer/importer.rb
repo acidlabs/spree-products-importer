@@ -152,17 +152,21 @@ module SpreeProductsImporter
         row[:images].each do |name|
           # TODO - Revisar si ya existe la Image
 
-          path = Spree::Config[:images_importer_files_path] + name
-          if File.exists?(Rails.root + path)
-            file = File.open(Rails.root + path)
+          begin
+            path = Spree::Config[:images_importer_files_path] + name
+            if File.exists?(Rails.root + path)
+              file = File.open(Rails.root + path)
 
-            image = Spree::Image.new
-            image.viewable   = variant
-            image.attachment = file
-            image.type       = 'Spree::Image'
-            image.alt        = ''
+              image = Spree::Image.new
+              image.viewable   = variant
+              image.attachment = file
+              image.type       = 'Spree::Image'
+              image.alt        = ''
 
-            image.save!
+              image.save!
+            end
+          rescue => e
+            puts e.message
           end
         end
       end
