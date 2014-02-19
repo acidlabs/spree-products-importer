@@ -6,14 +6,19 @@ module Spree
       end
 
       def import_spreadsheet
-        success, message = Spree::Config.importer.constantize.get_file_data(params[:file])
+        if params[:file]
+          success, message = Spree::Config.importer.constantize.get_file_data(params[:file])
 
-        if success
-          flash[:success] = message
+          if success
+            flash[:success] = message
+          else
+            @import_error_message = message
+            flash[:error] = message
+          end
         else
-          @import_error_message = message
-          flash[:error] = message
+          flash[:error] = I18n.t(:file_required, scope: [:spree, :spree_products_importer, :messages])
         end
+
         redirect_to import_admin_products_path
       end
 

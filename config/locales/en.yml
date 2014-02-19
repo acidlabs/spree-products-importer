@@ -21,3 +21,4 @@ en:
         products_cannot_be_created: "Products cannot be created"
         taxonomy_not_found: "Taxonomy not found"
         invalid_format: 'Invalid format'
+        file_required: You must attach a file
