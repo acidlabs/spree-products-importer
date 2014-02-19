@@ -153,7 +153,7 @@ module SpreeProductsImporter
           # TODO - Revisar si ya existe la Image
 
           begin
-            path = Spree::Config[:images_importer_files_path] + name
+            path = Spree::Config[:images_importer_files_path] + name.upcase
             if File.exists?(Rails.root + path)
               file = File.open(Rails.root + path)
 
