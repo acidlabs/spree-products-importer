@@ -147,7 +147,7 @@ module SpreeProductsImporter
       # Is responsible for creating the Images
       def self.make_images row
         product = find_product row
-        master  = product.master
+        variant  = product.variants.find(row[:variant][:id])
 
         row[:images].each do |name|
           # TODO - Revisar si ya existe la Image
@@ -156,7 +156,7 @@ module SpreeProductsImporter
           file = File.open(Rails.root + path)
 
           image = Spree::Image.new
-          image.viewable   = master
+          image.viewable   = variant
           image.attachment = file
           image.type       = 'Spree::Image'
           image.alt        = ''
