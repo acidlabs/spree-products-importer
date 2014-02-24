@@ -28,4 +28,10 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'selenium-webdriver'
   s.add_development_dependency 'simplecov'
   s.add_development_dependency 'sqlite3'
+
+  # Background Process
+  s.add_runtime_dependency 'sidekiq'
+  s.add_development_dependency 'sidekiq'
+  s.add_runtime_dependency 'sinatra'#, :require=> false
+  s.add_development_dependency 'sinatra'#, :require=> false
 end

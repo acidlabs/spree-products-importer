@@ -21,8 +21,16 @@ module SpreeProductsImporter
 
     # Receives a file and the get data from each file row
     def self.get_file_data(file)
+      filename = Rails.env.test? ? File.basename(file) : file.original_filename
+
+      SpreeProductsImporter::ProductsWorker.perform_async(filename, file.path)
+
+      return [true, "Import products in process"]
+    end
+
+    def self.load_products(filename, filepath)
       begin
-        open_spreadsheet(file)
+        open_spreadsheet(filename, filepath)
       rescue RuntimeError => e
         return e.message
       end
@@ -241,13 +249,11 @@ module SpreeProductsImporter
       #   file     File   -  a file intance with data to load
       #
       # Returns a Roo instance acording the file extension.
-      def self.open_spreadsheet(file)
-        filename = Rails.env.test? ? File.basename(file) : file.original_filename
-
+      def self.open_spreadsheet(filename, filepath)
         case File.extname(filename)
-          # when '.csv'  then @spreadsheet = Roo::CSV.new(file.path)
-          # when '.xls'  then @spreadsheet = Roo::Excel.new(file.path, nil, :ignore)
-          when '.xlsx' then @spreadsheet = Roo::Excelx.new(file.path, nil, :ignore)
+          # when '.csv'  then @spreadsheet = Roo::CSV.new(filepath)
+          # when '.xls'  then @spreadsheet = Roo::Excel.new(filepath, nil, :ignore)
+          when '.xlsx' then @spreadsheet = Roo::Excelx.new(filepath, nil, :ignore)
           else raise [false, I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], filename: filename)]
         end
 
