@@ -162,7 +162,7 @@ module SpreeProductsImporter
             taxon = Spree::Taxon.create(name: value)
           end
 
-          product.taxons << taxon if taxon.presence         
+          product.taxons << taxon unless product.taxons.include? taxon
         end
       end
 
