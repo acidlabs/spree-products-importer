@@ -210,5 +210,44 @@ describe "SpreeProductsImporter::Handler" do
     end
 
   end
- 
+
+
+  describe '#set_product_brand' do
+
+    context "when brand is not blank" do
+
+      before(:each) do
+        @values  = { "brand" => "Brand 1" }
+        @values2 = { "brand" => "Brand 2" }
+        @taxon   = FactoryGirl.create(:taxon, name: "Brand 1")
+      end
+
+      it "add the brand found to product" do
+        product = FactoryGirl.create(:base_product)
+        
+        product.taxons.count.should eq 0
+        SpreeProductsImporter::Handler.set_product_brand product, @values
+
+        product.taxons.should be_include @taxon
+        product.taxons.count.should eq 1
+      end
+
+      context "and taxon name is not found" do
+        it "add the origin found to product" do
+          product = FactoryGirl.create(:base_product)
+
+          product.taxons.count.should eq 0
+          Spree::Taxon.find_by_name(@values2["brand"]).should be_nil
+          SpreeProductsImporter::Handler.set_product_brand product, @values2
+
+          Spree::Taxon.find_by_name(@values2["brand"]).should_not be_nil
+          product.taxons.should_not be_include @taxon
+          product.taxons.count.should eq 1
+        end
+      end
+      
+    end
+
+  end
+
 end

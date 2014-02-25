@@ -148,6 +148,23 @@ module SpreeProductsImporter
 
     end
 
+    def self.set_product_brand product, values
+
+      values.each do |key, value|
+        # When column name is 'brand'
+        if key == 'brand' and !value.blank?
+          taxon = Spree::Taxon.find_by_name(value.strip)
+
+          unless taxon.presence
+            taxon = Spree::Taxon.create(name: value)
+          end
+
+          product.taxons << taxon if taxon.presence         
+        end
+      end
+
+    end
+
   end
 
 end
