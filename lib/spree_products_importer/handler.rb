@@ -37,7 +37,10 @@ module SpreeProductsImporter
         product = Spree::Product.create product_data[:product].merge(shipping_category_id: 1, available_on: Time.now)
         # Set product categories(taxons)
         set_product_categories product, product_data[:values]
-        # Set product properties
+        # Set product origin
+        set_product_origin product, product_data[:values]
+        # Set product brand
+        set_product_brand product, product_data[:values]
         # set_product_properties product, product_data[:properties]
       end
 
@@ -59,7 +62,7 @@ module SpreeProductsImporter
     # Validate each file row according to required attributes
     def self.validate_product_data data, line_number
       required_attributes = ["sku", "name", "price"]
-      optional_attributes = ["sale_price", "ean_13", "technical_description"]
+      optional_attributes = ["description", "sale_price", "ean_13", "technical_description"]
 
       validated_data = {
         product: {},

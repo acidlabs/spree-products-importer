@@ -5,8 +5,16 @@ describe "SpreeProductsImporter::Handler" do
 
   describe '#validate_product_data' do
 
+    let!(:valid_data_without_properties) {{ 
+      "name" => 'Product 2',
+      "price" => 80000,
+      "sku" => "ABC1234",
+      "description" => "The best product in the world",
+      "ean_13" => "ean123",
+      "sale_price" => 90000,
+      "technical_description" => "aaa bbb ccc"
+    }}
     let!(:valid_data) {{ "name" => 'Product 1', "price" => 80000, "sku" => "ABC1234", "property1" => "A", "property2" => "B"}}
-    let!(:valid_data_without_properties) {{ "name" => 'Product 2', "price" => 80000, "sku" => "ABC1234", "ean_13" => "ean123", "sale_price" => 90000, "technical_description" => "aaa bbb ccc"}}
     let!(:invalid_data) {{ "name" => nil, "price" => 80000, "sku" => "ABC1234" }}
     let!(:invalid_data_2) {{ "name" => "Product 3", "sku" => "ABC1234" }}
     
@@ -24,6 +32,7 @@ describe "SpreeProductsImporter::Handler" do
         result.last[:product][:name].should eq "Product 2"
         result.last[:product][:price].should eq 80000
         result.last[:product][:sku].should eq "ABC1234"
+        result.last[:product][:description].should eq "The best product in the world"
         result.last[:product][:ean_13].should eq "ean123"
         result.last[:product][:sale_price].should eq 90000
         result.last[:product][:technical_description].should eq "aaa bbb ccc"
