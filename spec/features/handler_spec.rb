@@ -6,7 +6,7 @@ describe "SpreeProductsImporter::Handler" do
   describe '#validate_product_data' do
 
     let!(:valid_data) {{ "name" => 'Product 1', "price" => 80000, "sku" => "ABC1234", "property1" => "A", "property2" => "B"}}
-    let!(:valid_data_without_properties) {{ "name" => 'Product 2', "price" => 80000, "sku" => "ABC1234" }}
+    let!(:valid_data_without_properties) {{ "name" => 'Product 2', "price" => 80000, "sku" => "ABC1234", "ean_13" => "ean123", "sale_price" => 90000, "technical_description" => "aaa bbb ccc"}}
     let!(:invalid_data) {{ "name" => nil, "price" => 80000, "sku" => "ABC1234" }}
     let!(:invalid_data_2) {{ "name" => "Product 3", "sku" => "ABC1234" }}
     
@@ -24,20 +24,23 @@ describe "SpreeProductsImporter::Handler" do
         result.last[:product][:name].should eq "Product 2"
         result.last[:product][:price].should eq 80000
         result.last[:product][:sku].should eq "ABC1234"
+        result.last[:product][:ean_13].should eq "ean123"
+        result.last[:product][:sale_price].should eq 90000
+        result.last[:product][:technical_description].should eq "aaa bbb ccc"
       end
 
       it "returns product properties in a hash" do
         result = SpreeProductsImporter::Handler.validate_product_data(valid_data, 2)
 
-        result.last[:properties]["property1"].should eq "A"
-        result.last[:properties]["property2"].should eq "B"
+        result.last[:values]["property1"].should eq "A"
+        result.last[:values]["property2"].should eq "B"
       end
 
       context "with valid arguments without product properties" do
         it "returns a empty properties hash" do
           result = SpreeProductsImporter::Handler.validate_product_data(valid_data_without_properties, 2)
 
-          result.last[:properties].should be_empty
+          result.last[:values].should be_empty
         end
       end
 
@@ -147,7 +150,10 @@ describe "SpreeProductsImporter::Handler" do
 
     context "when taxons is not blank" do
 
-      let!(:properties) { {"taxons" => "asdfg, Category 1, Category 2, Los"} }
+      let!(:values) { { "taxons" => "asdfg", 
+                        "taxons2" => "Category 1", 
+                        "taxons3" => "Category 2", 
+                        "taxons4" => "Los"} }
 
       it "add the taxons found to product" do
 
@@ -157,7 +163,7 @@ describe "SpreeProductsImporter::Handler" do
         taxon_3    = FactoryGirl.create(:taxon, name: "asdf")
       
         product.taxons.count.should eq 0
-        SpreeProductsImporter::Handler.set_product_categories product, properties
+        SpreeProductsImporter::Handler.set_product_categories product, values
 
         product.taxons.should be_include taxon_1
         product.taxons.should be_include taxon_2

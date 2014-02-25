@@ -36,9 +36,9 @@ module SpreeProductsImporter
         # Create product (Add shipping_category_id and available_on attributes)
         product = Spree::Product.create product_data[:product].merge(shipping_category_id: 1, available_on: Time.now)
         # Set product categories(taxons)
-        set_product_categories product, product_data[:properties]
+        set_product_categories product, product_data[:values]
         # Set product properties
-        set_product_properties product, product_data[:properties]
+        # set_product_properties product, product_data[:properties]
       end
 
       return [true, "Products created successfully"]
@@ -59,8 +59,14 @@ module SpreeProductsImporter
     # Validate each file row according to required attributes
     def self.validate_product_data data, line_number
       required_attributes = ["sku", "name", "price"]
-      validated_data = {product: {}, properties: {}}
+      optional_attributes = ["sale_price", "ean_13", "technical_description"]
 
+      validated_data = {
+        product: {},
+        values: {}
+      }
+
+      # Check for required attributes
       required_attributes.each do |attr|
         if data[attr].blank?
           return [false, "An error found at line #{line_number}: #{attr} is required"]
@@ -81,9 +87,23 @@ module SpreeProductsImporter
         end
       end
 
-      validated_data[:properties] = data
-      # TODO: Must define solution to shipping_category_id
-      validated_data[:product]    = validated_data[:product]
+      # Check for optional attributes
+      optional_attributes.each do |attr|
+        # When sku is numeric remove the decimal values
+        if attr == "ean_13" and data[attr].is_a? Numeric
+          attr_value = data[attr].to_i
+        else
+          attr_value = data[attr]
+        end
+
+        # Add key => value to normalized and validated hash
+        validated_data[:product] = validated_data[:product].merge(attr.to_sym => attr_value) unless attr_value.blank?
+
+        # Remove validate element
+        data.delete(attr)
+      end
+
+      validated_data[:values] = data
 
       [true, validated_data]
     end
@@ -104,17 +124,24 @@ module SpreeProductsImporter
       end
     end
 
-    def self.set_product_categories product, properties
+    def self.set_product_categories product, values
 
-      unless properties["taxons"].blank?
-        # Clean blank spaces and split by "-" to obtain a categories (taxons) list
-        taxons = properties["taxons"].split(",")
-
-        taxons.each do |taxon_name|
-          taxon = Spree::Taxon.find_by_name(taxon_name.strip)
+      values.each do |key, value|
+        # When column name starts with 'taxons' try add to the product taxons
+        if key[0..5] == "taxons" and !value.blank?
+          taxon = Spree::Taxon.find_by_name(value.strip)
           product.taxons << taxon if taxon.presence
         end
       end
+      # unless values["taxons"].blank?
+      #   # Clean blank spaces and split by "-" to obtain a categories (taxons) list
+      #   taxons = values["taxons"].split(",")
+
+      #   taxons.each do |taxon_name|
+      #     taxon = Spree::Taxon.find_by_name(taxon_name.strip)
+      #     product.taxons << taxon if taxon.presence
+      #   end
+      # end
 
     end
 
