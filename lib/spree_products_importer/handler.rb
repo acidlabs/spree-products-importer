@@ -133,15 +133,18 @@ module SpreeProductsImporter
           product.taxons << taxon if taxon.presence
         end
       end
-      # unless values["taxons"].blank?
-      #   # Clean blank spaces and split by "-" to obtain a categories (taxons) list
-      #   taxons = values["taxons"].split(",")
 
-      #   taxons.each do |taxon_name|
-      #     taxon = Spree::Taxon.find_by_name(taxon_name.strip)
-      #     product.taxons << taxon if taxon.presence
-      #   end
-      # end
+    end
+
+    def self.set_product_origin product, values
+
+      values.each do |key, value|
+        # When column name is 'origin'
+        if key == 'origin' and !value.blank?
+          taxon = Spree::Taxon.find_by_name(value.strip)
+          product.taxons << taxon if taxon.presence
+        end
+      end
 
     end
 

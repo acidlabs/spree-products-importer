@@ -174,5 +174,41 @@ describe "SpreeProductsImporter::Handler" do
     end
 
   end
+
+  describe '#set_product_origin' do
+
+    context "when origin is not blank" do
+
+      before(:each) do
+        @values  = { "origin" => "Falabella" }
+        @values2 = { "origin" => "Falabella1" }
+        @taxon   = FactoryGirl.create(:taxon, name: "Falabella")
+      end
+
+      it "add the origin found to product" do
+        product = FactoryGirl.create(:base_product)
+        
+        product.taxons.count.should eq 0
+        SpreeProductsImporter::Handler.set_product_origin product, @values
+
+        product.taxons.should be_include @taxon
+        product.taxons.count.should eq 1
+      end
+
+      context "and taxon name is not found" do
+        it "add the origin found to product" do
+          product = FactoryGirl.create(:base_product)
+
+          product.taxons.count.should eq 0
+          SpreeProductsImporter::Handler.set_product_origin product, @values2
+
+          product.taxons.should_not be_include @taxon
+          product.taxons.count.should eq 0
+        end
+      end
+      
+    end
+
+  end
  
 end
