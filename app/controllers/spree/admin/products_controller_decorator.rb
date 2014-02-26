@@ -7,7 +7,8 @@ module Spree
 
       def import_spreadsheet
         if params[:file]
-          success, message = Spree::Config.importer.constantize.get_file_data(params[:file])
+          
+          success, message = SpreeProductsImporter::Handler.get_file_data(params[:file])
 
           if success
             flash[:success] = message
