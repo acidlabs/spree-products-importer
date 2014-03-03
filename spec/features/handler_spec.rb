@@ -249,12 +249,29 @@ describe "SpreeProductsImporter::Handler" do
           Spree::Taxon.find_by_name(@values2["brand"]).should be_nil
           SpreeProductsImporter::Handler.set_product_brand product, @values2
 
-          Spree::Taxon.find_by_name(@values2["brand"]).should_not be_nil
+          taxon = Spree::Taxon.find_by_name(@values2["brand"])
+
+          taxon.should_not be_nil
           product.taxons.should_not be_include @taxon
           product.taxons.count.should eq 1
+          expect(taxon.parent_id).to be_blank
         end
+
+        context "and a parent exist" do
+          it "add 'Marcas' as parent taxon" do
+            parent  = FactoryGirl.create(:taxon, name: 'Marcas')
+            product = FactoryGirl.create(:base_product)
+
+            SpreeProductsImporter::Handler.set_product_brand product, @values2
+
+            taxon = Spree::Taxon.find_by_name(@values2["brand"])
+
+            expect(taxon.parent_id).to eq(parent.id)
+          end
+        end
+
       end
-      
+
     end
 
   end

@@ -136,7 +136,6 @@ module SpreeProductsImporter
           product.taxons << taxon if taxon.presence
         end
       end
-
     end
 
     def self.set_product_origin product, values
@@ -148,24 +147,24 @@ module SpreeProductsImporter
           product.taxons << taxon if taxon.presence
         end
       end
-
     end
 
     def self.set_product_brand product, values
-
       values.each do |key, value|
         # When column name is 'brand'
         if key == 'brand' and !value.blank?
           taxon = Spree::Taxon.find_by_name(value.strip)
 
           unless taxon.presence
-            taxon = Spree::Taxon.create(name: value)
+            parent = Spree::Taxon.find_by_name("Marcas")
+            data   = {name: value}
+            data   = data.merge(parent_id: parent.id) unless parent.blank?
+            taxon  = Spree::Taxon.create(data)
           end
 
           product.taxons << taxon unless product.taxons.include? taxon
         end
       end
-
     end
 
   end
