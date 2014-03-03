@@ -28,6 +28,7 @@ module SpreeProductsImporter
       return [true, "Import products in process"]
     end
 
+    # Load a file and the get data from each file row
     def self.load_products(filename, filepath)
       begin
         open_spreadsheet(filename, filepath)
@@ -38,13 +39,12 @@ module SpreeProductsImporter
       # Set the currency for Import
       set_import_currency
 
-      puts "READING:"
+      puts "READING: #{filename}"
 
-      # Validates each row element
+      # Load each row element
       2.upto(@spreadsheet.last_row).each do |row_index|
-        # begin
+        begin
           row = get_data(row_index)
-          puts "row#{row_index} - #{row.inspect}"
 
           make_products   row
           make_variants   row
@@ -53,14 +53,16 @@ module SpreeProductsImporter
           make_images     row
           make_aditionals row
 
-        # rescue RuntimeError => e
-        #   return e.message
-        # rescue => e
-        #   return e.message
-        # ensure
-        #   # Restore the correct currency after Import
-        #   restore_correct_currency
-        # end
+        rescue RuntimeError => e
+          puts "\nRow: #{row_index} -> #{row.inspect} #{e.message}"
+          return e.message
+        rescue => e
+          puts "\nRow: #{row_index} -> #{row.inspect} #{e.message}"
+          return e.message
+        ensure
+          # Restore the correct currency after Import
+          restore_correct_currency
+        end
       end
 
       return I18n.t(:products_created_successfully, scope: [:spree, :spree_products_importer, :messages])
@@ -109,6 +111,8 @@ module SpreeProductsImporter
       # Is responsible for creating the Product
       def self.make_products row
         if row[:product][:id].nil?
+          row[:product][:taxon_ids].uniq! if row[:product][:taxon_ids]
+
           product = Spree::Product.create! row[:product]
 
           # Store the Product :id in the row Hash data
@@ -160,21 +164,17 @@ module SpreeProductsImporter
         row[:images].each do |name|
           # TODO - Revisar si ya existe la Image
 
-          begin
-            path = Spree::Config[:images_importer_files_path] + name.upcase
-            if File.exists?(Rails.root + path)
-              file = File.open(Rails.root + path)
+          path = Spree::Config[:images_importer_files_path] + name.upcase
+          if File.exists?(Rails.root + path)
+            file = File.open(Rails.root + path)
 
-              image = Spree::Image.new
-              image.viewable   = variant
-              image.attachment = file
-              image.type       = 'Spree::Image'
-              image.alt        = ''
+            image = Spree::Image.new
+            image.viewable   = variant
+            image.attachment = file
+            image.type       = 'Spree::Image'
+            image.alt        = ''
 
-              image.save!
-            end
-          rescue => e
-            puts e.message
+            image.save!
           end
         end
       end
@@ -203,7 +203,6 @@ module SpreeProductsImporter
           required    = attribute[:required]
           type_parser = attribute[:type]
           section     = mapper.data
-
 
           cell = @spreadsheet.cell(row_index, column)
 
