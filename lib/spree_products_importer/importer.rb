@@ -176,7 +176,7 @@ module SpreeProductsImporter
 
             image.save!
           else
-            raise [false, I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: fieldname)]
+            raise [false, I18n.t(:image_not_found, scope: [:spree, :spree_products_importer, :messages], name: name)]
           end
         end
       end
