@@ -28,3 +28,4 @@ es:
         taxonomy_not_found: "Taxonomía no encontrada"
         invalid_format: 'Formato invalido'
         file_required: Debe adjuntar un archivo
+        image_not_found: "Imagen %{name} no existe"

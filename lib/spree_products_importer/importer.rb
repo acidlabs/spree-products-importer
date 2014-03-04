@@ -164,7 +164,7 @@ module SpreeProductsImporter
         row[:images].each do |name|
           # TODO - Revisar si ya existe la Image
 
-          path = Spree::Config[:images_importer_files_path] + name.upcase
+          path = Spree::Config[:images_importer_files_path] + name
           if File.exists?(Rails.root + path)
             file = File.open(Rails.root + path)
 
@@ -175,6 +175,8 @@ module SpreeProductsImporter
             image.alt        = ''
 
             image.save!
+          else
+            raise [false, I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: fieldname)]
           end
         end
       end

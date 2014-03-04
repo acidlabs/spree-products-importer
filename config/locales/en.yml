@@ -22,3 +22,4 @@ en:
         taxonomy_not_found: "Taxonomy not found"
         invalid_format: 'Invalid format'
         file_required: You must attach a file
+        image_not_found: "File %{name} not found"
