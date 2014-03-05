@@ -43,28 +43,31 @@ module SpreeProductsImporter
 
       # Load each row element
       2.upto(@spreadsheet.last_row).each do |row_index|
-        begin
-          row = get_data(row_index)
+        Spree::Product.transaction do
+          begin
+            row = get_data(row_index)
 
-          make_products   row
-          make_variants   row
-          make_taxons     row
-          make_properties row
-          make_images     row
-          make_aditionals row
+            make_products   row
+            make_variants   row
+            make_taxons     row
+            make_properties row
+            make_images     row
+            make_aditionals row
 
-        rescue RuntimeError => e
-          puts "\nRow: #{row_index} -> #{row.inspect} #{e.message}"
-          return e.message
-        rescue => e
-          puts "\nRow: #{row_index} -> #{row.inspect} #{e.message}"
-          return e.message
-        ensure
-          # Restore the correct currency after Import
-          restore_correct_currency
+          rescue RuntimeError => e
+            puts "\nRow: #{row_index} -> #{row.inspect} #{e.message}"
+            raise ActiveRecord::Rollback
+          rescue => e
+            puts "\nRow: #{row_index} -> #{row.inspect} #{e.message}"
+            raise ActiveRecord::Rollback
+          ensure
+            # Restore the correct currency after Import
+            restore_correct_currency
+          end
         end
       end
 
+      puts "READ done: #{filename}"
       return I18n.t(:products_created_successfully, scope: [:spree, :spree_products_importer, :messages])
     end
 
@@ -102,7 +105,7 @@ module SpreeProductsImporter
       # Find and returns a Product or raise an error
       def self.find_product row
         # Reviso que este seteado el :id del Product
-        raise [false, I18n.t(:product_not_found, scope: [:spree, :spree_products_importer, :messages])] if row[:product][:id].nil?
+        raise I18n.t(:product_not_found, scope: [:spree, :spree_products_importer, :messages]) if row[:product][:id].nil?
 
         # Find Product by :id
         Spree::Product.find(row[:product][:id])
@@ -176,7 +179,7 @@ module SpreeProductsImporter
 
             image.save!
           else
-            raise [false, I18n.t(:image_not_found, scope: [:spree, :spree_products_importer, :messages], name: name)]
+            raise I18n.t(:image_not_found, scope: [:spree, :spree_products_importer, :messages], name: name)
           end
         end
       end
@@ -209,7 +212,7 @@ module SpreeProductsImporter
           cell = @spreadsheet.cell(row_index, column)
 
           # TODO - Required data may be omitted if the product already exists
-          raise [false, I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: fieldname)] if cell.nil? and required
+          raise I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: fieldname) if cell.nil? and required
 
           next if cell.nil?
           value_or_values = mapper.parse cell, type_parser
@@ -255,7 +258,7 @@ module SpreeProductsImporter
           # when '.csv'  then @spreadsheet = Roo::CSV.new(filepath)
           # when '.xls'  then @spreadsheet = Roo::Excel.new(filepath, nil, :ignore)
           when '.xlsx' then @spreadsheet = Roo::Excelx.new(filepath, nil, :ignore)
-          else raise [false, I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], filename: filename)]
+          else raise I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], filename: filename)
         end
 
         @spreadsheet.default_sheet = @spreadsheet.sheets.first
