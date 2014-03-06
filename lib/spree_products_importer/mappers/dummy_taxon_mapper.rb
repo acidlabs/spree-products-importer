@@ -15,8 +15,8 @@ module SpreeProductsImporter
             [Spree::Taxon.find_by({name: 'Dummie'}).id]
           else
             taxonomy = Spree::Taxonomy.find_or_create_by_name('Dummie')
-            root    = taxonomy.root
-            taxon = Spree::Taxon.create! name: 'Dummie', taxonomy: taxonomy, parent: root, position: taxonomy.taxons.count
+            root     = taxonomy.root
+            taxon    = Spree::Taxon.create! name: 'Dummie', taxonomy: taxonomy, parent: root, position: taxonomy.taxons.count
 
             [taxon.id]
           end
