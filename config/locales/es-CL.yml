@@ -32,7 +32,7 @@ es-CL:
 
         notification:
           error: "Error en carga: %{filename}"
-          success: "Lectura finalizada: #{filename}"
+          success: "Lectura finalizada: %{filename}"
           info_error: 'Se produjo un error al leer:'
           info_success: 'Se ha leído completamente el archivo:'
           message: Error:

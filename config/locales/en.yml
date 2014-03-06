@@ -26,7 +26,7 @@ en:
 
         notification:
           error: "Error in loading: %{filename}"
-          success: "Finished reading: #{filename}"
+          success: "Finished reading: %{filename}"
           info_error: 'An error occurred while reading:'
           info_success: 'It has been completely read the file:'
           message: Error:
