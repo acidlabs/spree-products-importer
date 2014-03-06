@@ -153,7 +153,9 @@ module SpreeProductsImporter
 
         row[:properties].each do |property|
           property.keys.each do |property_name|
-            # TODO - Revisar si ya existe la <PropertyName - PropertyValue>
+            # Revisa si ya existe la Spree::ProductProperty, en cuyo caso se descarta la carga
+            next if Spree::ProductProperty.where(value: property[property_name], product_id: product.id, property_name: property_name.to_s).any?
+
             Spree::ProductProperty.create! value: property[property_name], product_id: product.id, property_name: property_name.to_s
           end
         end
@@ -165,11 +167,27 @@ module SpreeProductsImporter
         variant  = product.variants.find(row[:variant][:id])
 
         row[:images].each do |name|
-          # TODO - Revisar si ya existe la Image
 
-          path = Spree::Config[:images_importer_files_path] + name
-          if File.exists?(Rails.root + path)
-            file = File.open(Rails.root + path)
+          extension = File.extname(name)
+
+          original_path = Spree::Config[:images_importer_files_path] + name
+          fixed_path    = Spree::Config[:images_importer_files_path] + name.gsub(extname, extname.upcase)
+
+          # Revisa si ya existe la Imagen, en cuyo caso se descarta la carga
+          next if Spree::Image.where(viewable: variant, attachment_file_name: [name, name.gsub(extname, extname.upcase)]).any?
+
+          if File.exists?(Rails.root + original_path)
+            file = File.open(Rails.root + original_path)
+
+            image = Spree::Image.new
+            image.viewable   = variant
+            image.attachment = file
+            image.type       = 'Spree::Image'
+            image.alt        = ''
+
+            image.save!
+          elsif File.exists?(Rails.root + fixed_path)
+            file = File.open(Rails.root + fixed_path)
 
             image = Spree::Image.new
             image.viewable   = variant
