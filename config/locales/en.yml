@@ -23,3 +23,12 @@ en:
         invalid_format: 'Invalid format'
         file_required: You must attach a file
         image_not_found: "File %{name} not found"
+
+        notification:
+          error: "Error in loading: %{filename}"
+          success: "Finished reading: #{filename}"
+          info_error: 'An error occurred while reading:'
+          info_success: 'It has been completely read the file:'
+          message: Error
+          data: Data
+          row: Row

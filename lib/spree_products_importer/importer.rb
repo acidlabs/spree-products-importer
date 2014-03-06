@@ -46,6 +46,7 @@ module SpreeProductsImporter
         Spree::Product.transaction do
           begin
             row = get_data(row_index)
+            data = row.deep_dup
 
             make_products   row
             make_variants   row
@@ -55,10 +56,16 @@ module SpreeProductsImporter
             make_aditionals row
 
           rescue RuntimeError => e
-            puts "\nRow: #{row_index} -> #{row.inspect} #{e.message}"
+            puts "\nRow: #{row_index} -> #{data} #{e.message}"
+
+            NotificationMailer.error(filename, row_index, error, data)
+
             raise ActiveRecord::Rollback
           rescue => e
-            puts "\nRow: #{row_index} -> #{row.inspect} #{e.message}"
+            puts "\nRow: #{row_index} -> #{data.inspect} #{e.message}"
+
+            NotificationMailer.error(filename, row_index, error, data)
+
             raise ActiveRecord::Rollback
           ensure
             # Restore the correct currency after Import
@@ -68,6 +75,9 @@ module SpreeProductsImporter
       end
 
       puts "READ done: #{filename}"
+
+      NotificationMailer.successfully(filename)
+
       return I18n.t(:products_created_successfully, scope: [:spree, :spree_products_importer, :messages])
     end
 

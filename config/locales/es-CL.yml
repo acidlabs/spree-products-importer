@@ -29,3 +29,12 @@ es-CL:
         invalid_format: 'Formato invalido'
         file_required: Debe adjuntar un archivo
         image_not_found: "Imagen %{name} no existe"
+
+        notification:
+          error: "Error en carga: %{filename}"
+          success: "Lectura finalizada: #{filename}"
+          info_error: 'Se produjo un error al leer:'
+          info_success: 'Se ha leído completamente el archivo:'
+          message: Error
+          data: Datos
+          row: Fila
