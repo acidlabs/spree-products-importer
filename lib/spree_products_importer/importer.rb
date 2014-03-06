@@ -58,13 +58,13 @@ module SpreeProductsImporter
           rescue RuntimeError => e
             puts "\nRow: #{row_index} -> #{data} #{e.message}"
 
-            NotificationMailer.error(filename, row_index, error, data)
+            NotificationMailer.error(filename, row_index, e.message, data).deliver
 
             raise ActiveRecord::Rollback
           rescue => e
             puts "\nRow: #{row_index} -> #{data.inspect} #{e.message}"
 
-            NotificationMailer.error(filename, row_index, error, data)
+            NotificationMailer.error(filename, row_index, e.message, data).deliver
 
             raise ActiveRecord::Rollback
           ensure
@@ -76,7 +76,7 @@ module SpreeProductsImporter
 
       puts "READ done: #{filename}"
 
-      NotificationMailer.successfully(filename)
+      NotificationMailer.successfully(filename).deliver
 
       return I18n.t(:products_created_successfully, scope: [:spree, :spree_products_importer, :messages])
     end
@@ -115,7 +115,7 @@ module SpreeProductsImporter
       # Find and returns a Product or raise an error
       def self.find_product row
         # Reviso que este seteado el :id del Product
-        raise I18n.t(:product_not_found, scope: [:spree, :spree_products_importer, :messages]) if row[:product][:id].nil?
+        raise "__FILE__:#{__LINE__} #{I18n.t(:product_not_found, scope: [:spree, :spree_products_importer, :messages])}" if row[:product][:id].nil?
 
         # Find Product by :id
         Spree::Product.find(row[:product][:id])
@@ -164,7 +164,7 @@ module SpreeProductsImporter
         row[:properties].each do |property|
           property.keys.each do |property_name|
             # Revisa si ya existe la Spree::ProductProperty, en cuyo caso se descarta la carga
-            next if Spree::ProductProperty.where(value: property[property_name], product_id: product.id, property_name: property_name.to_s).any?
+            next if Spree::ProductProperty.joins(:property).where(value: property[property_name], product_id: product.id).where(spree_properties: {name: property_name.to_s}).any?
 
             Spree::ProductProperty.create! value: property[property_name], product_id: product.id, property_name: property_name.to_s
           end
@@ -178,7 +178,7 @@ module SpreeProductsImporter
 
         row[:images].each do |name|
 
-          extension = File.extname(name)
+          extname = File.extname(name)
 
           original_path = Spree::Config[:images_importer_files_path] + name
           fixed_path    = Spree::Config[:images_importer_files_path] + name.gsub(extname, extname.upcase)
@@ -207,7 +207,7 @@ module SpreeProductsImporter
 
             image.save!
           else
-            raise I18n.t(:image_not_found, scope: [:spree, :spree_products_importer, :messages], name: name)
+            raise "__FILE__:#{__LINE__} #{I18n.t(:image_not_found, scope: [:spree, :spree_products_importer, :messages], name: name)}"
           end
         end
       end
@@ -240,7 +240,7 @@ module SpreeProductsImporter
           cell = @spreadsheet.cell(row_index, column)
 
           # TODO - Required data may be omitted if the product already exists
-          raise I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: fieldname) if cell.nil? and required
+          raise "__FILE__:#{__LINE__} #{I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: fieldname)}" if cell.nil? and required
 
           next if cell.nil?
           value_or_values = mapper.parse cell, type_parser
@@ -286,7 +286,7 @@ module SpreeProductsImporter
           # when '.csv'  then @spreadsheet = Roo::CSV.new(filepath)
           # when '.xls'  then @spreadsheet = Roo::Excel.new(filepath, nil, :ignore)
           when '.xlsx' then @spreadsheet = Roo::Excelx.new(filepath, nil, :ignore)
-          else raise I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], filename: filename)
+          else raise "__FILE__:#{__LINE__} #{I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], filename: filename)}"
         end
 
         @spreadsheet.default_sheet = @spreadsheet.sheets.first

@@ -16,8 +16,6 @@ module SpreeProductsImporter
         preference :importer, :string, :default => SpreeProductsImporter::Handler.to_s
         preference :import_currency, :string, :default => 'USD'
         preference :images_importer_files_path, :string, :default => 'public/importer/'
-
-
         preference :importer_from, :string, :default => 'notification@importer.com'
         preference :importer_to,   :string, :default => 'notification@importer.com'
       end

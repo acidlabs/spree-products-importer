@@ -29,6 +29,6 @@ en:
           success: "Finished reading: #{filename}"
           info_error: 'An error occurred while reading:'
           info_success: 'It has been completely read the file:'
-          message: Error
-          data: Data
-          row: Row
+          message: Error:
+          data: Data:
+          row: Row:

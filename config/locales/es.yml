@@ -35,6 +35,6 @@ es:
           success: "Lectura finalizada: #{filename}"
           info_error: 'Se produjo un error al leer:'
           info_success: 'Se ha leído completamente el archivo:'
-          message: Error
-          data: Datos
-          row: Fila
+          message: Error:
+          data: Datos:
+          row: Fila:
