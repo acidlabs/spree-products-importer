@@ -31,7 +31,7 @@ Gem::Specification.new do |s|
 
   # Background Process
   s.add_runtime_dependency 'sidekiq'
-  s.add_development_dependency 'sidekiq'
+  # s.add_development_dependency 'sidekiq'
   s.add_runtime_dependency 'sinatra'#, :require=> false
-  s.add_development_dependency 'sinatra'#, :require=> false
+  # s.add_development_dependency 'sinatra'#, :require=> false
 end

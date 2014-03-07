@@ -115,7 +115,7 @@ module SpreeProductsImporter
       # Find and returns a Product or raise an error
       def self.find_product row
         # Reviso que este seteado el :id del Product
-        raise "__FILE__:#{__LINE__} #{I18n.t(:product_not_found, scope: [:spree, :spree_products_importer, :messages])}" if row[:product][:id].nil?
+        raise "#{__FILE__}:#{__LINE__} #{I18n.t(:product_not_found, scope: [:spree, :spree_products_importer, :messages])}" if row[:product][:id].nil?
 
         # Find Product by :id
         Spree::Product.find(row[:product][:id])
@@ -207,7 +207,7 @@ module SpreeProductsImporter
 
             image.save!
           else
-            raise "__FILE__:#{__LINE__} #{I18n.t(:image_not_found, scope: [:spree, :spree_products_importer, :messages], name: name)}"
+            raise "#{__FILE__}:#{__LINE__} #{I18n.t(:image_not_found, scope: [:spree, :spree_products_importer, :messages], name: name)}"
           end
         end
       end
@@ -240,7 +240,7 @@ module SpreeProductsImporter
           cell = @spreadsheet.cell(row_index, column)
 
           # TODO - Required data may be omitted if the product already exists
-          raise "__FILE__:#{__LINE__} #{I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: fieldname)}" if cell.nil? and required
+          raise "#{__FILE__}:#{__LINE__} #{I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: fieldname)}" if cell.nil? and required
 
           next if cell.nil?
           value_or_values = mapper.parse cell, type_parser
@@ -286,7 +286,7 @@ module SpreeProductsImporter
           # when '.csv'  then @spreadsheet = Roo::CSV.new(filepath)
           # when '.xls'  then @spreadsheet = Roo::Excel.new(filepath, nil, :ignore)
           when '.xlsx' then @spreadsheet = Roo::Excelx.new(filepath, nil, :ignore)
-          else raise "__FILE__:#{__LINE__} #{I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], filename: filename)}"
+          else raise "#{__FILE__}:#{__LINE__} #{I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], filename: filename)}"
         end
 
         @spreadsheet.default_sheet = @spreadsheet.sheets.first
