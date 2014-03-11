@@ -178,13 +178,16 @@ module SpreeProductsImporter
 
         row[:images].each do |name|
 
-          extname = File.extname(name)
+          extname       = File.extname(name)
+          name_upcase   = name.gsub(extname, extname.upcase)
+          name_downcase = name.gsub(extname, extname.downcase)
 
           original_path = Spree::Config[:images_importer_files_path] + name
-          fixed_path    = Spree::Config[:images_importer_files_path] + name.gsub(extname, extname.upcase)
+          upcase_path   = Spree::Config[:images_importer_files_path] + name_upcase
+          downcase_path = Spree::Config[:images_importer_files_path] + name_downcase
 
           # Revisa si ya existe la Imagen, en cuyo caso se descarta la carga
-          next if Spree::Image.where(viewable: variant, attachment_file_name: [name, name.gsub(extname, extname.upcase)]).any?
+          next if Spree::Image.where(viewable: variant, attachment_file_name: [name, name_upcase, name_downcase]).any?
 
           if File.exists?(Rails.root + original_path)
             file = File.open(Rails.root + original_path)
@@ -196,8 +199,18 @@ module SpreeProductsImporter
             image.alt        = ''
 
             image.save!
-          elsif File.exists?(Rails.root + fixed_path)
-            file = File.open(Rails.root + fixed_path)
+          elsif File.exists?(Rails.root + upcase_path)
+            file = File.open(Rails.root + upcase_path)
+
+            image = Spree::Image.new
+            image.viewable   = variant
+            image.attachment = file
+            image.type       = 'Spree::Image'
+            image.alt        = ''
+
+            image.save!
+          elsif File.exists?(Rails.root + downcase_path)
+            file = File.open(Rails.root + downcase_path)
 
             image = Spree::Image.new
             image.viewable   = variant
