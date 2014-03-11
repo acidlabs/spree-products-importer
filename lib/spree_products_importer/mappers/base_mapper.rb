@@ -7,7 +7,7 @@ module SpreeProductsImporter
       ARRAY_TYPE   = 'array'
 
       def self.splitter
-        ','
+        ';'
       end
 
       def self.parse value, type
