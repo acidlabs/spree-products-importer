@@ -18,6 +18,8 @@ module SpreeProductsImporter
         preference :images_importer_files_path, :string, :default => 'public/importer/'
         preference :importer_from, :string, :default => 'notification@importer.com'
         preference :importer_to,   :string, :default => 'notification@importer.com'
+
+        preference :sample_file,   :string, :default => Rails.root.join('lib/templates/example.xls')
       end
     end
 

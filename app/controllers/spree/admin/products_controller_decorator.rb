@@ -23,7 +23,7 @@ module Spree
       end
 
       def import_template
-        file= File.open(Rails.root.join('lib/templates/example.xls'))
+        file= File.open(Spree::Config[:sample_file])
         send_data file.read, :filename => "example.xls"
       end
     end
