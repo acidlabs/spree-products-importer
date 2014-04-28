@@ -45,6 +45,7 @@ module SpreeProductsImporter
       2.upto(@spreadsheet.last_row).each do |row_index|
         Spree::Product.transaction do
           begin
+            start = Time.now.to_s
             row = get_data(row_index)
             data = row.deep_dup
 
@@ -54,6 +55,8 @@ module SpreeProductsImporter
             make_properties row
             make_images     row
             make_aditionals row
+
+            puts "Reading at: #{row_index}/#{@spreadsheet.last_row} - #{start} #{Time.now.to_s}"# if row_index % 10 == 0
 
           rescue RuntimeError => e
             puts "\nRow: #{row_index} -> #{data} #{e.message}"
