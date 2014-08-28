@@ -141,16 +141,10 @@ module SpreeProductsImporter
 
       # Is responsible for creating the Variant
       def self.make_variants row
-        product = find_product row
-
-        if product.variants.where(sku: row[:variant][:sku]).any?
-          variant = product.variants.where(sku: row[:variant][:sku]).last
-
-          # TODO - Ver si se van a actualizar los datos de la Variant
-        else
+        variant = Spree::Variant.find_by product_id: row[:product][:id], sku: row[:variant][:sku]
+        if variant.nil?
           variant = Spree::Variant.create! row[:variant].merge({product_id: row[:product][:id]})
         end
-
         # Store the Variant :id in the row Hash data
         row[:variant][:id] = variant.id
       end
@@ -162,23 +156,18 @@ module SpreeProductsImporter
 
       # Is responsible for creating the ProductProperties imports
       def self.make_properties row
-        product = find_product row
-
         row[:properties].each do |property|
           property.keys.each do |property_name|
             # Revisa si ya existe la Spree::ProductProperty, en cuyo caso se descarta la carga
-            next if Spree::ProductProperty.joins(:property).where(value: property[property_name], product_id: product.id).where(spree_properties: {name: property_name.to_s}).any?
+            next if Spree::ProductProperty.joins(:property).where(value: property[property_name], product_id: row[:product][:id]).where(spree_properties: {name: property_name.to_s}).any?
 
-            Spree::ProductProperty.create! value: property[property_name], product_id: product.id, property_name: property_name.to_s
+            Spree::ProductProperty.create! value: property[property_name], product_id: row[:product][:id], property_name: property_name.to_s
           end
         end
       end
 
       # Is responsible for creating the Images
       def self.make_images row
-        product = find_product row
-        variant  = product.variants.find(row[:variant][:id])
-
         row[:images].each do |name|
 
           extname       = File.extname(name)
@@ -190,13 +179,14 @@ module SpreeProductsImporter
           downcase_path = Spree::Config[:images_importer_files_path] + name_downcase
 
           # Revisa si ya existe la Imagen, en cuyo caso se descarta la carga
-          next if Spree::Image.where(viewable: variant, attachment_file_name: [name, name_upcase, name_downcase]).any?
+          next if Spree::Image.where(viewable_type: Spree::Variant.to_s, viewable_id: row[:variant][:id], attachment_file_name: [name, name_upcase, name_downcase]).any?
 
           if File.exists?(Rails.root + original_path)
             file = File.open(Rails.root + original_path)
 
             image = Spree::Image.new
-            image.viewable   = variant
+            image.viewable_type   = Spree::Variant.to_s
+            image.viewable_id   = row[:variant][:id]
             image.attachment = file
             image.type       = 'Spree::Image'
             image.alt        = ''
@@ -206,7 +196,8 @@ module SpreeProductsImporter
             file = File.open(Rails.root + upcase_path)
 
             image = Spree::Image.new
-            image.viewable   = variant
+            image.viewable_type   = Spree::Variant.to_s
+            image.viewable_id   = row[:variant][:id]
             image.attachment = file
             image.type       = 'Spree::Image'
             image.alt        = ''
@@ -216,7 +207,8 @@ module SpreeProductsImporter
             file = File.open(Rails.root + downcase_path)
 
             image = Spree::Image.new
-            image.viewable   = variant
+            image.viewable_type   = Spree::Variant.to_s
+            image.viewable_id   = row[:variant][:id]
             image.attachment = file
             image.type       = 'Spree::Image'
             image.alt        = ''
@@ -240,9 +232,10 @@ module SpreeProductsImporter
         # Check if the product exists
         unformat_product_identifier = @spreadsheet.cell(row_index, @product_identifier[:column])
         product_identifier          = @product_identifier[:mapper].parse unformat_product_identifier, @product_identifier[:type]
-        if Spree::Product.exists?({@product_identifier[:name] => product_identifier})
+        
+        if _product = Spree::Product.find_by({@product_identifier[:name] => product_identifier})
           parsed_data[:product]      = {}
-          parsed_data[:product][:id] = Spree::Product.find_by({@product_identifier[:name] => product_identifier}).id
+          parsed_data[:product][:id] = _product.id
         end
 
         @attributes.each do |attribute|
