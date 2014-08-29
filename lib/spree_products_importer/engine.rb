@@ -20,6 +20,8 @@ module SpreeProductsImporter
         preference :importer_to,   :string, :default => 'notification@importer.com'
 
         preference :sample_file,   :string, :default => Rails.root.join('lib/templates/example.xls')
+
+        preference :reading_status, :integer, :default => 10
       end
     end
 

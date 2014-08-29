@@ -10,7 +10,8 @@ module SpreeProductsImporter
     sidekiq_options retry: false
 
     def perform(filename, filepath)
-      SpreeProductsImporter::Importer.load_products(filename, filepath)
+      importer = SpreeProductsImporter::Importer.new
+      importer.load_products(filename, filepath)
     end
   end
 end

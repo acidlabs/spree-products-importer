@@ -5,19 +5,21 @@ require 'httparty'
 
 module SpreeProductsImporter
   class Importer
-    @spreadsheet = nil
+    def initialize
+      @spreadsheet = nil
 
-    @current_currency = nil
+      @current_currency = nil
 
-    # TODO - remover dependencia de mapper
-    @product_identifier = {name: :name, column: 'A', type: nil, mapper: Mappers::ProductMapper}
+      # TODO - remover dependencia de mapper
+      @product_identifier = {name: :name, column: 'A', type: nil, mapper: Mappers::ProductMapper}
 
-    @attributes = [
-                    {required: true, name: :name,   column: 'A', type: nil,                               mapper: Mappers::ProductMapper},
-                    {required: true, name: :price,  column: 'B', type: Mappers::BaseMapper::INTEGER_TYPE, mapper: Mappers::ProductMapper},
-                    {required: true, name: :sku,    column: 'C', type: Mappers::BaseMapper::STRING_TYPE,  mapper: Mappers::VariantMapper},
-                    {required: true, name: :taxons, column: 'D', type: Mappers::BaseMapper::ARRAY_TYPE,   mapper: Mappers::TaxonMapper  },
-                  ]
+      @attributes = [
+                      {required: true, name: :name,   column: 'A', type: nil,                               mapper: Mappers::ProductMapper},
+                      {required: true, name: :price,  column: 'B', type: Mappers::BaseMapper::INTEGER_TYPE, mapper: Mappers::ProductMapper},
+                      {required: true, name: :sku,    column: 'C', type: Mappers::BaseMapper::STRING_TYPE,  mapper: Mappers::VariantMapper},
+                      {required: true, name: :taxons, column: 'D', type: Mappers::BaseMapper::ARRAY_TYPE,   mapper: Mappers::TaxonMapper  },
+                    ]
+    end
 
     # Receives a file and the get data from each file row
     def self.get_file_data(file)
@@ -29,7 +31,7 @@ module SpreeProductsImporter
     end
 
     # Load a file and the get data from each file row
-    def self.load_products(filename, filepath)
+    def load_products(filename, filepath)
       begin
         open_spreadsheet(filename, filepath)
       rescue RuntimeError => e
@@ -41,11 +43,12 @@ module SpreeProductsImporter
 
       puts "READING: #{filename}"
 
+      start = Time.now.to_s
+
       # Load each row element
       2.upto(@spreadsheet.last_row).each do |row_index|
         Spree::Product.transaction do
           begin
-            start = Time.now.to_s
             row = get_data(row_index)
             data = row.deep_dup
 
@@ -56,7 +59,10 @@ module SpreeProductsImporter
             make_images     row
             make_aditionals row
 
-            puts "Reading at: #{row_index}/#{@spreadsheet.last_row} - #{start} #{Time.now.to_s}"# if row_index % 10 == 0
+            if row_index % Spree::Config[:reading_status].to_i == 0
+              puts "Reading at: #{filename}:#{row_index}/#{@spreadsheet.last_row} - #{start} #{Time.now.to_s}"
+              start = Time.now.to_s
+            end
 
           rescue RuntimeError => e
             puts "\nRow: #{row_index} -> #{data} #{e.message}"
@@ -88,7 +94,7 @@ module SpreeProductsImporter
     # This allows easy customizations, overwriting this function
     #
     # Returns an Hash
-    def self.default_hash
+    def default_hash
       {
         product: {},      # {attribute1: VALUE_OR_VALUES, attribute2: VALUE_OR_VALUES, ...}
         variant: {},      # {attribute1: VALUE_OR_VALUES, attribute2: VALUE_OR_VALUES, ...}
@@ -101,7 +107,7 @@ module SpreeProductsImporter
 
     private
       # Set the currency for Import
-      def self.set_import_currency
+      def set_import_currency
         # Store current currency
         @current_currency = Spree::Config[:currency]
 
@@ -110,13 +116,13 @@ module SpreeProductsImporter
       end
 
       # Restore the correct currency after Import
-      def self.restore_correct_currency
+      def restore_correct_currency
         # Sets the correct currency for import
         Spree::Config[:currency] = @current_currency
       end
 
       # Find and returns a Product or raise an error
-      def self.find_product row
+      def find_product row
         # Reviso que este seteado el :id del Product
         raise "#{__FILE__}:#{__LINE__} #{I18n.t(:product_not_found, scope: [:spree, :spree_products_importer, :messages])}" if row[:product][:id].nil?
 
@@ -125,7 +131,7 @@ module SpreeProductsImporter
       end
 
       # Is responsible for creating the Product
-      def self.make_products row
+      def make_products row
         if row[:product][:id].nil?
           row[:product][:taxon_ids].uniq! if row[:product][:taxon_ids]
 
@@ -140,7 +146,7 @@ module SpreeProductsImporter
       end
 
       # Is responsible for creating the Variant
-      def self.make_variants row
+      def make_variants row
         variant = Spree::Variant.find_by product_id: row[:product][:id], sku: row[:variant][:sku]
         if variant.nil?
           variant = Spree::Variant.create! row[:variant].merge({product_id: row[:product][:id]})
@@ -150,12 +156,12 @@ module SpreeProductsImporter
       end
 
       # Is responsible for creating the Taxon's
-      def self.make_taxons row
+      def make_taxons row
         # TODO - Implementar
       end
 
       # Is responsible for creating the ProductProperties imports
-      def self.make_properties row
+      def make_properties row
         row[:properties].each do |property|
           property.keys.each do |property_name|
             # Revisa si ya existe la Spree::ProductProperty, en cuyo caso se descarta la carga
@@ -167,7 +173,7 @@ module SpreeProductsImporter
       end
 
       # Is responsible for creating the Images
-      def self.make_images row
+      def make_images row
         row[:images].each do |name|
 
           extname       = File.extname(name)
@@ -221,18 +227,18 @@ module SpreeProductsImporter
       end
 
       # Is responsible for creating the Aditionals imports
-      def self.make_aditionals row
+      def make_aditionals row
         # Overrides this function to add aditionals or customs imports
       end
 
       # TODO - Import Properties
-      def self.get_data row_index
+      def get_data row_index
         parsed_data = default_hash
 
         # Check if the product exists
         unformat_product_identifier = @spreadsheet.cell(row_index, @product_identifier[:column])
         product_identifier          = @product_identifier[:mapper].parse unformat_product_identifier, @product_identifier[:type]
-        
+
         if _product = Spree::Product.find_by({@product_identifier[:name] => product_identifier})
           parsed_data[:product]      = {}
           parsed_data[:product][:id] = _product.id
@@ -290,7 +296,7 @@ module SpreeProductsImporter
       #   file     File   -  a file intance with data to load
       #
       # Returns a Roo instance acording the file extension.
-      def self.open_spreadsheet(filename, filepath)
+      def open_spreadsheet(filename, filepath)
         case File.extname(filename)
           # when '.csv'  then @spreadsheet = Roo::CSV.new(filepath)
           # when '.xls'  then @spreadsheet = Roo::Excel.new(filepath, nil, :ignore)
