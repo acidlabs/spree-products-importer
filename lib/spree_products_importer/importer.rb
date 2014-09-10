@@ -5,45 +5,43 @@ require 'httparty'
 
 module SpreeProductsImporter
   class Importer
-    def initialize
+    def initialize filename, filepath
+      @filename = filename
+      @filepath  = filepath
+
+      # Parsed Data
       @spreadsheet = nil
 
-      @current_currency = nil
+      # # TODO - remover dependencia de mapper
+      # @product_identifier = {name: :sky, column: 'A', type: Mappers::BaseMapper::STRING_TYPE, mapper: Mappers::ProductMapper}
 
-      # TODO - remover dependencia de mapper
-      @product_identifier = {name: :name, column: 'A', type: nil, mapper: Mappers::ProductMapper}
-
-      @attributes = [
-                      {required: true, name: :name,   column: 'A', type: nil,                               mapper: Mappers::ProductMapper},
-                      {required: true, name: :price,  column: 'B', type: Mappers::BaseMapper::INTEGER_TYPE, mapper: Mappers::ProductMapper},
-                      {required: true, name: :sku,    column: 'C', type: Mappers::BaseMapper::STRING_TYPE,  mapper: Mappers::VariantMapper},
-                      {required: true, name: :taxons, column: 'D', type: Mappers::BaseMapper::ARRAY_TYPE,   mapper: Mappers::TaxonMapper  },
-                    ]
-    end
-
-    # Receives a file and the get data from each file row
-    def self.get_file_data(file)
-      filename = Rails.env.test? ? File.basename(file) : file.original_filename
-
-      SpreeProductsImporter::ProductsWorker.perform_async(filename, file.path)
-
-      return [true, "Import products in process"]
+      # @attributes = [
+      #                 {required: true, name: :sku,         column: 'A', type: Mappers::BaseMapper::STRING_TYPE, mapper: Mappers::ProductMapper},
+      #                 {required: true, name: :name,        column: 'B', type: Mappers::BaseMapper::STRING_TYPE, mapper: Mappers::ProductMapper},
+      #                 {required: true, name: :description, column: 'C', type: Mappers::BaseMapper::STRING_TYPE, mapper: Mappers::ProductMapper}
+      #               ]
+      @mappers = []
+      @mappers << Mappers::ProductMapper.new('A', :sku)
+      @mappers << Mappers::ProductMapper.new('B', :name)
+      @mappers << Mappers::ProductMapper.new('C', :description)
     end
 
     # Load a file and the get data from each file row
-    def load_products(filename, filepath)
+    def load_products
+      puts I18n.t(:reading, scope: [:spree, :spree_products_importer, :logs], filename: @filename) if Spree::Config.verbose
+
+      start = Time.now
       begin
-        open_spreadsheet(filename, filepath)
+        open_spreadsheet
       rescue RuntimeError => e
         return e.message
       end
+      puts I18n.t(:loading_file, scope: [:spree, :spree_products_importer, :logs], filename: @filename, time: Time.now - start) if Spree::Config.verbose
 
-      # Set the currency for Import
-      set_import_currency
 
-      puts "READING: #{filename}"
+      start = Time.now
 
-      start = Time.now.to_s
+      failed_rows = []
 
       # Load each row element
       2.upto(@spreadsheet.last_row).each do |row_index|
@@ -52,42 +50,43 @@ module SpreeProductsImporter
             row = get_data(row_index)
             data = row.deep_dup
 
-            make_products   row
-            make_variants   row
-            make_taxons     row
-            make_properties row
-            make_images     row
-            make_aditionals row
+            # make_products   row
+            # make_variants   row
+            # make_taxons     row
+            # make_properties row
+            # make_images     row
+            # make_aditionals row
 
-            if row_index % Spree::Config[:reading_status].to_i == 0
-              puts "Reading at: #{filename}:#{row_index}/#{@spreadsheet.last_row} - #{start} #{Time.now.to_s}"
-              start = Time.now.to_s
+            if Spree::Config.verbose and row_index % Spree::Config[:log_progress_every] == 0
+              puts I18n.t(:progress, scope: [:spree, :spree_products_importer, :logs], filename: @filename, time: Time.now - start, row: row_index, rows: @spreadsheet.last_row, data: data)
+              start = Time.now
             end
 
           rescue RuntimeError => e
-            puts "\nRow: #{row_index} -> #{data} #{e.message}"
+            puts I18n.t(:error, scope: [:spree, :spree_products_importer, :logs], filename: @filename, row: row_index, rows: @spreadsheet.last_row, data: data.inspect, message: e.message) if Spree::Config.verbose
 
-            NotificationMailer.error(filename, row_index, e.message, data).deliver
+            failed_rows << {row_index: row_index, message: e.message, data: data}
 
             raise ActiveRecord::Rollback
           rescue => e
-            puts "\nRow: #{row_index} -> #{data.inspect} #{e.message}"
+            puts I18n.t(:error, scope: [:spree, :spree_products_importer, :logs], filename: @filename, row: row_index, rows: @spreadsheet.last_row, data: data.inspect, message: e.message) if Spree::Config.verbose
 
-            NotificationMailer.error(filename, row_index, e.message, data).deliver
+            failed_rows << {row_index: row_index, message: e.message, data: data}
 
             raise ActiveRecord::Rollback
           ensure
-            # Restore the correct currency after Import
-            restore_correct_currency
+
           end
         end
       end
 
-      puts "READ done: #{filename}"
+      puts I18n.t(:done, scope: [:spree, :spree_products_importer, :logs], filename: @filename) if Spree::Config.verbose
 
-      NotificationMailer.successfully(filename).deliver
-
-      return I18n.t(:products_created_successfully, scope: [:spree, :spree_products_importer, :messages])
+      if failed_rows.empty?
+        NotificationMailer.successfully(@filename).deliver
+      else
+        NotificationMailer.error(@filename, failed_rows).deliver
+      end
     end
 
     # Defines the hash with default data and structure used to read the data in each row from excel
@@ -106,19 +105,21 @@ module SpreeProductsImporter
     end
 
     private
-      # Set the currency for Import
-      def set_import_currency
-        # Store current currency
-        @current_currency = Spree::Config[:currency]
+      # Receives a file instance and then returns a Roo object acording the file extension
+      #
+      # @params:
+      #   file     File   -  a file intance with data to load
+      #
+      # Returns a Roo instance acording the file extension.
+      def open_spreadsheet
+        case File.extname(@filename)
+          when '.csv'  then @spreadsheet = Roo::CSV.new(@filepath)
+          # when '.xls'  then @spreadsheet = Roo::Excel.new(filepath, nil, :ignore)
+          # when '.xlsx' then @spreadsheet = Roo::Excelx.new(filepath, nil, :ignore)
+          else raise "#{__FILE__}:#{__LINE__} #{I18n.t(:unknown_file_type, scope: [:spree, :spree_products_importer, :messages], filename: @filename)}"
+        end
 
-        # Sets the correct currency for import
-        Spree::Config[:currency] = Spree::Config[:import_currency]
-      end
-
-      # Restore the correct currency after Import
-      def restore_correct_currency
-        # Sets the correct currency for import
-        Spree::Config[:currency] = @current_currency
+        @spreadsheet.default_sheet = @spreadsheet.sheets.first
       end
 
       # Find and returns a Product or raise an error
@@ -231,80 +232,63 @@ module SpreeProductsImporter
         # Overrides this function to add aditionals or customs imports
       end
 
-      # TODO - Import Properties
+      # # TODO - Import Properties
+      # def get_data row_index
+      #   data = default_hash.deep_dup
+
+      #   @attributes.each do |attribute|
+      #     column      = attribute[:column]
+      #     fieldname   = attribute[:name]
+      #     mapper      = attribute[:mapper]
+      #     required    = attribute[:required]
+      #     type_parser = attribute[:type]
+      #     section     = mapper.data
+
+      #     cell = @spreadsheet.cell(row_index, column)
+
+      #     # TODO - Required data may be omitted if the product already exists
+      #     raise "#{__FILE__}:#{__LINE__} #{I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: fieldname)}" if cell.nil? and required
+
+      #     next if cell.nil?
+      #     value_or_values = mapper.parse cell, type_parser
+
+      #     # If I have the ID of the product do nothing because it is not going to edit the product
+      #     next if data[:product][:id] if section == :product
+
+      #     if section == :properties
+      #       colname = @spreadsheet.cell(1, column)
+      #       value_or_values.each do |value|
+      #         data[section] << {colname => value}
+      #       end
+
+      #     elsif [:images, :taxons].include? section
+      #       if value_or_values.class == Array
+      #         data[section] += value_or_values
+      #       else
+      #         data[section] << value_or_values
+      #       end
+
+      #     else # :product, :variant, :aditionals
+      #       if type_parser == Mappers::BaseMapper::ARRAY_TYPE
+      #         data[section][fieldname] = [] if data[section][fieldname].nil?
+
+      #         data[section][fieldname] += value_or_values
+      #       else
+      #         data[section][fieldname] = value_or_values
+      #       end
+      #     end
+      #   end
+
+      #   data
+      # end
       def get_data row_index
-        parsed_data = default_hash
+        data = default_hash.deep_dup
 
-        # Check if the product exists
-        unformat_product_identifier = @spreadsheet.cell(row_index, @product_identifier[:column])
-        product_identifier          = @product_identifier[:mapper].parse unformat_product_identifier, @product_identifier[:type]
-
-        if _product = Spree::Product.find_by({@product_identifier[:name] => product_identifier})
-          parsed_data[:product]      = {}
-          parsed_data[:product][:id] = _product.id
+        @mappers.each do |mapper|
+          mapper.parse @spreadsheet, row_index, data
         end
 
-        @attributes.each do |attribute|
-          column      = attribute[:column]
-          fieldname   = attribute[:name]
-          mapper      = attribute[:mapper]
-          required    = attribute[:required]
-          type_parser = attribute[:type]
-          section     = mapper.data
-
-          cell = @spreadsheet.cell(row_index, column)
-
-          # TODO - Required data may be omitted if the product already exists
-          raise "#{__FILE__}:#{__LINE__} #{I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], row: row_index, attribute: fieldname)}" if cell.nil? and required
-
-          next if cell.nil?
-          value_or_values = mapper.parse cell, type_parser
-
-          # If I have the ID of the product do nothing because it is not going to edit the product
-          next if parsed_data[:product][:id] if section == :product
-
-          if section == :properties
-            colname = @spreadsheet.cell(1, column)
-            value_or_values.each do |value|
-              parsed_data[section] << {colname => value}
-            end
-
-          elsif [:images, :taxons].include? section
-            if value_or_values.class == Array
-              parsed_data[section] += value_or_values
-            else
-              parsed_data[section] << value_or_values
-            end
-
-          else # :product, :variant, :aditionals
-            if type_parser == Mappers::BaseMapper::ARRAY_TYPE
-              parsed_data[section][fieldname] = [] if parsed_data[section][fieldname].nil?
-
-              parsed_data[section][fieldname] += value_or_values
-            else
-              parsed_data[section][fieldname] = value_or_values
-            end
-          end
-        end
-
-        parsed_data
-      end
-
-      # Receives a file instance and then returns a Roo object acording the file extension
-      #
-      # @params:
-      #   file     File   -  a file intance with data to load
-      #
-      # Returns a Roo instance acording the file extension.
-      def open_spreadsheet(filename, filepath)
-        case File.extname(filename)
-          # when '.csv'  then @spreadsheet = Roo::CSV.new(filepath)
-          # when '.xls'  then @spreadsheet = Roo::Excel.new(filepath, nil, :ignore)
-          when '.xlsx' then @spreadsheet = Roo::Excelx.new(filepath, nil, :ignore)
-          else raise "#{__FILE__}:#{__LINE__} #{I18n.t(:an_error_found, scope: [:spree, :spree_products_importer, :messages], filename: filename)}"
-        end
-
-        @spreadsheet.default_sheet = @spreadsheet.sheets.first
+        return data
       end
   end
 end

@@ -1,0 +1,15 @@
+<%= render :partial => 'spree/admin/shared/product_sub_menu' %>
+
+<% content_for :page_title do %>
+  <%= Spree.t("spree_products_importer.products.import.title") %>
+<% end %>
+
+<%= form_tag admin_importer_index_path, multipart: true, use_route: "spree" do %>
+  <%= file_field_tag :file %>
+  <%= submit_tag Spree.t("spree_products_importer.products.import.submit_text") %>
+<% end %>
+
+<p>
+  <%= Spree.t("spree_products_importer.products.import.download_message") %>
+  <%= link_to Spree.t("spree_products_importer.products.import.template_link_text"), template_admin_importer_index_path%>
+</p>

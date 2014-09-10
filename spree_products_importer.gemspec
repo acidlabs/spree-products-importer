@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'spree_products_importer'
-  s.version     = '0.2.8'
+  s.version     = '2.0.0'
   s.summary     = 'Import tool for Spree Product'
   s.required_ruby_version = '>= 1.9.3'
 
@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.requirements << 'none'
 
-  s.add_dependency 'spree_core', '~> 2.1.3'
+  s.add_dependency 'spree_core', '~> 2.0.0'
   s.add_dependency 'roo'
 
   s.add_development_dependency 'capybara', '~> 2.1'

@@ -5,7 +5,7 @@ en:
   spree:
     admin:
       tab:
-        import: Importar
+        import: Import
     spree_products_importer:
       products:
         import:
@@ -14,21 +14,30 @@ en:
           template_link_text: "here"
           submit_text: "Import"
       messages:
-        products_created_successfully: "Products created successfully"
         an_error_found: "An error found at line %{row}, :%{attribute} is required"
         unknown_file_type: "Unknown file type: %{filename}"
         product_not_found: Product not found
         products_cannot_be_created: "Products cannot be created"
         taxonomy_not_found: "Taxonomy not found"
         invalid_format: 'Invalid format'
-        file_required: You must attach a file
         image_not_found: "File %{name} not found"
 
         notification:
           error: "Error in loading: %{filename}"
           success: "Finished reading: %{filename}"
-          info_error: 'An error occurred while reading:'
-          info_success: 'It has been completely read the file:'
-          message: 'Error:'
-          data: 'Data:'
-          row: 'Row:'
+          info_error: 'But with the following errors:'
+          readed: 'It has been completely read the file:'
+          message: 'Error'
+          data: 'Data'
+          row: 'Row'
+        controller:
+          importing: File was successfully added to queue
+          error: File cannot by added to queue
+          file_required: You must attach a file
+
+      logs:
+        reading: "READING: %{filename}"
+        loading_file: "    Open file time: %{time}"
+        progress: "    Reading at: %{filename}:%{row}/%{rows} - %{time} | %{data}"
+        error: "    Row: %{row}/%{rows} -> %{message}"
+        done: "    READ done: %{filename}"

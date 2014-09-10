@@ -4,14 +4,15 @@ require 'rubygems'
 require 'sidekiq'
 
 module SpreeProductsImporter
-  class ProductsWorker
+  class ImporterWorker
     include Sidekiq::Worker
 
     sidekiq_options retry: false
 
     def perform(filename, filepath)
-      importer = SpreeProductsImporter::Importer.new
-      importer.load_products(filename, filepath)
+      importer = SpreeProductsImporter::Importer.new filename, filepath
+
+      importer.load_products
     end
   end
 end

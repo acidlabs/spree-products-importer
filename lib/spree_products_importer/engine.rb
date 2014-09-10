@@ -13,15 +13,18 @@ module SpreeProductsImporter
 
     initializer "spree.importer.preferences", :before => :load_config_initializers do |app|
       Spree::AppConfiguration.class_eval do
-        preference :importer, :string, :default => SpreeProductsImporter::Handler.to_s
-        preference :import_currency, :string, :default => 'USD'
-        preference :images_importer_files_path, :string, :default => 'public/importer/'
+        # Setting notification email
         preference :importer_from, :string, :default => 'notification@importer.com'
         preference :importer_to,   :string, :default => 'notification@importer.com'
 
-        preference :sample_file,   :string, :default => Rails.root.join('lib/templates/example.xls')
+        # Setting path to example CSV file
+        preference :sample_file,   :string, :default => Rails.root.join('lib/templates/example.csv')
 
-        preference :reading_status, :integer, :default => 10
+        # Setting a step to log progress status
+        preference :log_progress_every, :integer, :default => 10
+
+        # Verbose
+        preference :verbose, :boolean, :default => true
       end
     end
 
