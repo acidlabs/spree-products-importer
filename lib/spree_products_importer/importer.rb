@@ -42,7 +42,7 @@ module SpreeProductsImporter
             data = default_hash.deep_dup
 
             @mappers.each do |mapper|
-              mapper.parse @spreadsheet, row_index, data
+              mapper.load @spreadsheet, row_index, data
             end
 
             # make_products   row
