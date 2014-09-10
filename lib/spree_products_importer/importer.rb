@@ -9,17 +9,8 @@ module SpreeProductsImporter
       @filename = filename
       @filepath  = filepath
 
-      # Parsed Data
       @spreadsheet = nil
 
-      # # TODO - remover dependencia de mapper
-      # @product_identifier = {name: :sky, column: 'A', type: Mappers::BaseMapper::STRING_TYPE, mapper: Mappers::ProductMapper}
-
-      # @attributes = [
-      #                 {required: true, name: :sku,         column: 'A', type: Mappers::BaseMapper::STRING_TYPE, mapper: Mappers::ProductMapper},
-      #                 {required: true, name: :name,        column: 'B', type: Mappers::BaseMapper::STRING_TYPE, mapper: Mappers::ProductMapper},
-      #                 {required: true, name: :description, column: 'C', type: Mappers::BaseMapper::STRING_TYPE, mapper: Mappers::ProductMapper}
-      #               ]
       @mappers = []
       @mappers << Mappers::ProductMapper.new('A', :sku)
       @mappers << Mappers::ProductMapper.new('B', :name)
