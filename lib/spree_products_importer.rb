@@ -1,5 +1,6 @@
 require 'spree_core'
 require 'spree_products_importer/engine'
 require 'spree_products_importer/handler'
+require 'spree_products_importer/mappers/base_mapper'
 require 'spree_products_importer/mappers/product_mapper'
 require 'spree_products_importer/importer'

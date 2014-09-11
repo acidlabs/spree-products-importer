@@ -12,9 +12,12 @@ module SpreeProductsImporter
       @spreadsheet = nil
 
       @mappers = []
-      @mappers << Mappers::ProductMapper.new('A', :sku)
-      @mappers << Mappers::ProductMapper.new('B', :name)
-      @mappers << Mappers::ProductMapper.new('C', :description)
+      @mappers << Mappers::ProductMapper.new('A', :name)
+      @mappers << Mappers::ProductMapper.new('B', :sku)
+      @mappers << Mappers::ProductMapper.new('C', :prototype_id)
+      @mappers << Mappers::ProductMapper.new('D', :price)
+      @mappers << Mappers::ProductMapper.new('E', :available_on)
+      @mappers << Mappers::ProductMapper.new('F', :shipping_category_id)
     end
 
     # Load a file and the get data from each file row
@@ -45,7 +48,7 @@ module SpreeProductsImporter
               mapper.load @spreadsheet, row_index, data
             end
 
-            # make_products   row
+            make_products data
 
             if Spree::Config.verbose and row_index % Spree::Config[:log_progress_every] == 0
               puts I18n.t(:progress, scope: [:spree, :spree_products_importer, :logs], filename: @filename, time: Time.now - start, row: row_index, rows: @spreadsheet.last_row, data: data)

@@ -38,6 +38,6 @@ en:
       logs:
         reading: "READING: %{filename}"
         loading_file: "    Open file time: %{time}"
-        progress: "    Reading at: %{filename}:%{row}/%{rows} - %{time} | %{data}"
+        progress: "    %{filename}: %{row}/%{rows} - %{time} | %{data}"
         error: "    Row: %{row}/%{rows} -> %{message}"
         done: "    READ done: %{filename}"

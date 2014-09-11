@@ -1,43 +1,4 @@
-sku,name,product_description,athlete_name,meta_keywords,meta_description,prototype_code,prototype_id,master_price,upcharge_amount,available_on,preferred_low_inventory_value,live,shipping_category_id,tax_category_id,variant_sizes,variant_colors,collection,Designer,tags,details,terms,stock_location_id,count_on_hand,Images
-98141207,Robert Griffin III Pro Toon T-Shirt,This dynamic QB now has even more weapons to lead this high-powered Washington offense.,Robert Griffin III,Quarterback,"Robert Griffin III, Football, NFL, Washington Redskins, Quarterback, FanPrint",T,534024676,26.95,2,9/7/14 0:00,0,Y,727197548,25484906,"S, M, L, XL, XXL, XXXL","Black, Caribbean Blue, Charcoal, Charity Pink, City Green, Gold, Green Apple, Heather Blue, Heather Dark Grey, Heather Green, Heather Grey, Heather Purple, Hot Pink, Independence Red, Key Lime, Lake, Light Blue, Mandarin Orange, Maroon, Navy, Orange, Purple, Red, Royal Blue, Silver, Smoke, Spring Yellow, Storm Grey, White",Characters,Courtney Williams,"Football,NFL,NFLPA,Washington, D.C.,Washington Redskins,Quarterback,T-Shirt,Characters,Robert Griffin III,Courtney Williams","100% ring-spun lightweight cotton
-Pre-shrunk
-Tubular construction
-Shoulder-to-shoulder tape
-Seamless collar
-Double-needle sleeve and bottom hem
-Lightweight and comfortable",Shipping to the US and Canada only.,2,100000,"*Note for Gert - we could have an S3 bucket with all the web images that need to be uploaded, right now we are using the following file naming convention - name-prototype_code-variant_color"
-98141224,Robert Griffin III Pro Toon Hooded Sweatshirt,This dynamic QB now has even more weapons to lead this high-powered Washington offense.,Robert Griffin III,Quarterback,"Robert Griffin III, Football, NFL, Washington Redskins, Quarterback, FanPrint",HD,571598468,58.95,0,9/7/14 0:00,0,Y,727197548,25484906,"XS, S, M, L, XL, XXL","Asphalt, Black, Brown, Heather Gray, Kelly Green, Navy, Truffle, White",Characters,Courtney Williams,"Football,NFL,NFLPA,Washington, D.C.,Washington Redskins,Quarterback,Hooded Sweatshirt,Characters,Robert Griffin III,Courtney Williams","100% California fleece cotton
-Hooded with matching finished polyester drawcord
-Raglan sleeves
-Kangaroo pocket
-Fabric weight 7.2 oz/yd2
-Made in California
-Lightweight and comfortable",Shipping to the US and Canada only.,2,100000,"*Note for Gert - we could have an S3 bucket with all the web images that need to be uploaded, right now we are using the following file naming convention - name-prototype_code-variant_color"
-98141231,Robert Griffin III Pro Toon Youth T-Shirt,This dynamic QB now has even more weapons to lead this high-powered Washington offense.,Robert Griffin III,Quarterback,"Robert Griffin III, Football, NFL, Washington Redskins, Quarterback, FanPrint",YT,571598499,23.95,0,9/7/14 0:00,0,Y,727197548,25484906,"XS, S, M, L, XL","Black, Heather Gray, Navy, Red, Royal Blue, White",Characters,Courtney Williams,"Football,NFL,NFLPA,Washington, D.C.,Washington Redskins,Quarterback,Youth T-Shirt,Characters,Robert Griffin III,Courtney Williams","100% cotton jersey
-Pre-shrunk
-Heavyweight
-Seamless collar
-Shoulder-to-shoulder tape
-Double-needle neck, sleeves and bottom hem
-Lightweight and comfortable",Shipping to the US and Canada only.,2,100000,"*Note for Gert - we could have an S3 bucket with all the web images that need to be uploaded, right now we are using the following file naming convention - name-prototype_code-variant_color"
-98141250,Russell Wilson Since 1988 T-Shirt,Russell is poised to bring his team back to the biggest game in all of sports. ,Russell Wilson,Quarterback,"Russell Wilson, Football, NFL, Seattle Seahawks, Quarterback, FanPrint",T,534024676,26.95,2,9/7/14 0:00,0,Y,727197548,25484906,"S, M, L, XL, XXL, XXXL","Black, Caribbean Blue, Charcoal, Charity Pink, City Green, Gold, Green Apple, Heather Blue, Heather Dark Grey, Heather Green, Heather Grey, Heather Purple, Hot Pink, Independence Red, Key Lime, Lake, Light Blue, Mandarin Orange, Maroon, Navy, Orange, Purple, Red, Royal Blue, Silver, Smoke, Spring Yellow, Storm Grey, White",Caricatures,AJ Salazar,"Football,NFL,NFLPA,Seattle,Seattle Seahawks,Quarterback,T-Shirt,Caricatures,Russell Wilson,AJ Salazar","100% ring-spun lightweight cotton
-Pre-shrunk
-Tubular construction
-Shoulder-to-shoulder tape
-Seamless collar
-Double-needle sleeve and bottom hem
-Lightweight and comfortable",Shipping to the US and Canada only.,2,100000,"*Note for Gert - we could have an S3 bucket with all the web images that need to be uploaded, right now we are using the following file naming convention - name-prototype_code-variant_color"
-98141258,Russell Wilson Since 1988 Hooded Sweatshirt,Russell is poised to bring his team back to the biggest game in all of sports. ,Russell Wilson,Quarterback,"Russell Wilson, Football, NFL, Seattle Seahawks, Quarterback, FanPrint",HD,571598468,58.95,0,9/7/14 0:00,0,Y,727197548,25484906,"XS, S, M, L, XL, XXL","Asphalt, Black, Brown, Heather Gray, Kelly Green, Navy, Truffle, White",Caricatures,AJ Salazar,"Football,NFL,NFLPA,Seattle,Seattle Seahawks,Quarterback,Hooded Sweatshirt,Caricatures,Russell Wilson,AJ Salazar","100% California fleece cotton
-Hooded with matching finished polyester drawcord
-Raglan sleeves
-Kangaroo pocket
-Fabric weight 7.2 oz/yd2
-Made in California
-Lightweight and comfortable",Shipping to the US and Canada only.,2,100000,"*Note for Gert - we could have an S3 bucket with all the web images that need to be uploaded, right now we are using the following file naming convention - name-prototype_code-variant_color"
-98141302,Russell Wilson Since 1988 Youth T-Shirt,Russell is poised to bring his team back to the biggest game in all of sports. ,Russell Wilson,Quarterback,"Russell Wilson, Football, NFL, Seattle Seahawks, Quarterback, FanPrint",YT,571598499,23.95,0,9/7/14 0:00,0,Y,727197548,25484906,"XS, S, M, L, XL","Black, Heather Gray, Navy, Red, Royal Blue, White",Caricatures,AJ Salazar,"Football,NFL,NFLPA,Seattle,Seattle Seahawks,Quarterback,Youth T-Shirt,Caricatures,Russell Wilson,AJ Salazar","100% cotton jersey
-Pre-shrunk
-Heavyweight
-Seamless collar
-Shoulder-to-shoulder tape
-Double-needle neck, sleeves and bottom hem
-Lightweight and comfortable",Shipping to the US and Canada only.,2,100000,"*Note for Gert - we could have an S3 bucket with all the web images that need to be uploaded, right now we are using the following file naming convention - name-prototype_code-variant_color"
+name,sku,prototype,master_price,available_on,shipping_category
+First product,,,100.0,,1
+Second product,sku1,1,200.0,9/7/14 0:00,1
+Third product,sku2,1,300.0,9/7/14 0:00,1
