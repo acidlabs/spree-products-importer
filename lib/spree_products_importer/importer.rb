@@ -11,6 +11,8 @@ module SpreeProductsImporter
 
       @spreadsheet = nil
 
+      @product_identifier = ProductIdentifier.new('A', :name)
+
       @mappers = []
       @mappers << Mappers::ProductMapper.new('A', :name)
       @mappers << Mappers::ProductMapper.new('B', :sku)
@@ -41,7 +43,11 @@ module SpreeProductsImporter
       2.upto(@spreadsheet.last_row).each do |row_index|
         Spree::Product.transaction do
           begin
-            # ToDo - Revisar que no exista, de lo contrario saltarse la fila
+            if @product_identifier.exists?(@spreadsheet, row_index)
+              puts I18n.t(:already_exists, scope: [:spree, :spree_products_importer, :logs], filename: @filename, row: row_index, rows: @spreadsheet.last_row, data: @spreadsheet.row(row_index))
+              next
+            end
+
             data = default_hash.deep_dup
 
             @mappers.each do |mapper|

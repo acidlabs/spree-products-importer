@@ -41,3 +41,4 @@ en:
         progress: "    %{filename}: %{row}/%{rows} - %{time} | %{data}"
         error: "    Row: %{row}/%{rows} -> %{message}"
         done: "    READ done: %{filename}"
+        already_exists: "    Product already exists: %{row}/%{rows} | %{data}"
