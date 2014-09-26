@@ -25,6 +25,13 @@ module SpreeProductsImporter
 
         # Verbose
         preference :verbose, :boolean, :default => true
+
+
+        # Dropbox API
+        preference :dropbox_api_enabled, :boolean, :default => false
+        preference :dropbox_api_key,     :string,  :default => ''
+        preference :dropbox_api_secret,  :string,  :default => ''
+        preference :dropbox_api_folder,  :string,  :default => '/'
       end
     end
 

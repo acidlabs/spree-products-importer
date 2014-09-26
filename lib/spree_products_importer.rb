@@ -12,4 +12,5 @@ require 'spree_products_importer/parsers/array_parser'
 require 'spree_products_importer/parsers/boolean_parser'
 require 'spree_products_importer/parsers/date_time_parser'
 
+require 'spree_products_importer/product_identifier'
 require 'spree_products_importer/importer'

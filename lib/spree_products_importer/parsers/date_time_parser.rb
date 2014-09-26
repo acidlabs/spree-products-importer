@@ -2,7 +2,7 @@
 module SpreeProductsImporter
   module Parsers
     class DateTimeParser
-       def initialize format="%d/%m/%y"
+       def initialize format="%m/%d/%y"
         @format = format
       end
 

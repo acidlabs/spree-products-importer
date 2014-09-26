@@ -3,11 +3,13 @@
 require 'roo'
 require 'httparty'
 
+require 'dropbox_sdk'
+
 module SpreeProductsImporter
   class Importer
-    def initialize filename, filepath
+    def initialize filename, filepath, options={access_token: nil}
       @filename = filename
-      @filepath  = filepath
+      @filepath = filepath
 
       @spreadsheet = nil
 
@@ -51,6 +53,7 @@ module SpreeProductsImporter
 
             data = default_hash.deep_dup
 
+
             @mappers.each do |mapper|
               mapper.load @spreadsheet, row_index, data
             end
@@ -69,13 +72,13 @@ module SpreeProductsImporter
           rescue RuntimeError => e
             puts I18n.t(:error, scope: [:spree, :spree_products_importer, :logs], filename: @filename, row: row_index, rows: @spreadsheet.last_row, data: data.inspect, message: e.message) if Spree::Config.verbose
 
-            failed_rows << {row_index: row_index, message: e.message, data: data}
+            failed_rows << {row_index: row_index, message: e.message, data: data, backtrace: e.backtrace}
 
             raise ActiveRecord::Rollback
           rescue => e
             puts I18n.t(:error, scope: [:spree, :spree_products_importer, :logs], filename: @filename, row: row_index, rows: @spreadsheet.last_row, data: data.inspect, message: e.message) if Spree::Config.verbose
 
-            failed_rows << {row_index: row_index, message: e.message, data: data}
+            failed_rows << {row_index: row_index, message: e.message, data: data, backtrace: e.backtrace}
 
             raise ActiveRecord::Rollback
           ensure

@@ -34,4 +34,6 @@ Gem::Specification.new do |s|
   # s.add_development_dependency 'sidekiq'
   s.add_runtime_dependency 'sinatra'#, :require=> false
   # s.add_development_dependency 'sinatra'#, :require=> false
+
+  s.add_runtime_dependency 'dropbox-sdk'
 end

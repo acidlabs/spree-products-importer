@@ -3,6 +3,9 @@
 
 en:
   spree:
+    get_access_token_url: 'Get one at: '
+    access_token: Access token
+    file: File
     admin:
       tab:
         import: Import
@@ -34,6 +37,8 @@ en:
           importing: File was successfully added to queue
           error: File cannot by added to queue
           file_required: You must attach a file
+          all_fields_required: All fields required
+          access_token_required: You need to provide a valid access_token
 
       logs:
         reading: "READING: %{filename}"
