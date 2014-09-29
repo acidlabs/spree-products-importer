@@ -3,8 +3,8 @@
 
 en:
   spree:
-    get_access_token_url: 'Get one at: '
-    access_token: Access token
+    get_dropbox_code_url: 'Get one at: '
+    dropbox_code: Code
     file: File
     admin:
       tab:
@@ -38,7 +38,7 @@ en:
           error: File cannot by added to queue
           file_required: You must attach a file
           all_fields_required: All fields required
-          access_token_required: You need to provide a valid access_token
+          dropbox_code_required: You need to provide a valid code
 
       logs:
         reading: "READING: %{filename}"

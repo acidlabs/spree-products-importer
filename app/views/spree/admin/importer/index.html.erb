@@ -6,12 +6,12 @@
 
 <%= form_tag admin_importer_index_path, multipart: true, use_route: "spree" do |f| %>
   <% if Spree::Config.dropbox_api_enabled %>
-    <div data-hook="admin_importer_access_token">
+    <div data-hook="admin_importer_dropbox_code">
       <div class="field">
-        <%= label_tag :access_token, raw(Spree.t(:access_token) + content_tag(:span, ' *',  :class => "required")) %>
-        <%= text_field_tag :access_token %>
+        <%= label_tag :dropbox_code, raw(Spree.t(:dropbox_code) + content_tag(:span, ' *',  :class => "required")) %>
+        <%= text_field_tag :dropbox_code %>
 
-        <span><%= Spree.t(:get_access_token_url) %><%= link_to @authorize_url, @authorize_url, target: :_blank %></span>
+        <span><%= Spree.t(:get_dropbox_code_url) %><%= link_to @authorize_url, @authorize_url, target: :_blank %></span>
       </div>
     </div>
   <% end %>

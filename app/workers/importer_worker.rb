@@ -9,7 +9,7 @@ module SpreeProductsImporter
 
     sidekiq_options retry: false
 
-    def perform(filename, filepath, options={access_token: nil})
+    def perform(filename, filepath, options={dropbox_code: nil})
       importer = SpreeProductsImporter::Importer.new filename, filepath, options
 
       importer.load_products

@@ -7,7 +7,7 @@ require 'dropbox_sdk'
 
 module SpreeProductsImporter
   class Importer
-    def initialize filename, filepath, options={access_token: nil}
+    def initialize filename, filepath, options={dropbox_code: nil}
       @filename = filename
       @filepath = filepath
 

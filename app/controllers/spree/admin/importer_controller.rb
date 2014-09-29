@@ -23,15 +23,15 @@ module Spree
       def create
         # ToDo - Refactor!
         if Spree::Config.dropbox_api_enabled
-          if params[:access_token].present? and params[:file]
-            if SpreeProductsImporter::Handler.import(params[:file], access_token: params[:access_token])
+          if params[:dropbox_code].present? and params[:file]
+            if SpreeProductsImporter::Handler.import(params[:file], dropbox_code: params[:dropbox_code])
               flash[:success] = I18n.t(:importing, scope: [:spree, :spree_products_importer, :messages, :controller])
             else
               flash[:error] = I18n.t(:error, scope: [:spree, :spree_products_importer, :messages, :controller])
             end
           elsif params[:file]
-            flash[:error] = I18n.t(:access_token_required, scope: [:spree, :spree_products_importer, :messages, :controller])
-          elsif params[:access_token].present?
+            flash[:error] = I18n.t(:dropbox_code_required, scope: [:spree, :spree_products_importer, :messages, :controller])
+          elsif params[:dropbox_code].present?
             flash[:error] = I18n.t(:file_required, scope: [:spree, :spree_products_importer, :messages, :controller])
           else
             flash[:error] = I18n.t(:all_fields_required, scope: [:spree, :spree_products_importer, :messages, :controller])
